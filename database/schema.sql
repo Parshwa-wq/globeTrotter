@@ -19,6 +19,7 @@ DROP TABLE IF EXISTS shared_links;
 DROP TABLE IF EXISTS expenses;
 DROP TABLE IF EXISTS activities;
 DROP TABLE IF EXISTS stops;
+DROP TABLE IF EXISTS trip_routes;
 DROP TABLE IF EXISTS trips;
 DROP TABLE IF EXISTS users;
 
@@ -33,6 +34,7 @@ CREATE TABLE users (
     password_hash TEXT NOT NULL,
     profile_photo TEXT DEFAULT NULL,
     language_pref VARCHAR(10) DEFAULT 'en',
+    default_origin VARCHAR(255) DEFAULT NULL,
     role ENUM('user', 'admin') DEFAULT 'user',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -54,6 +56,21 @@ CREATE TABLE trips (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_trips_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT chk_trip_dates CHECK (end_date >= start_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- 2.5. TRIP_ROUTES TABLE
+-- AI Generated transit routes for trips
+-- ============================================
+CREATE TABLE trip_routes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    trip_id INT NOT NULL,
+    origin VARCHAR(255) NOT NULL,
+    destination VARCHAR(255) NOT NULL,
+    mode VARCHAR(50) NOT NULL,
+    stations_json JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_trip_routes_trip FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
