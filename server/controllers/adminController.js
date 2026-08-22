@@ -53,3 +53,29 @@ exports.deleteUser = async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to delete user' });
     }
 };
+
+exports.updateUserRole = async (req, res) => {
+    try {
+        const targetId = req.params.id;
+        const { role } = req.body;
+        
+        if (!['user', 'admin'].includes(role)) {
+            return res.status(400).json({ success: false, message: 'Invalid role' });
+        }
+        
+        if (parseInt(targetId) === req.user.userId) {
+            return res.status(400).json({ success: false, message: "Cannot change your own role." });
+        }
+
+        const [result] = await db.query('UPDATE users SET role = ? WHERE id = ?', [role, targetId]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        
+        res.json({ success: true, message: `User role updated to ${role}` });
+    } catch (error) {
+        console.error('Admin Update Role Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to update role' });
+    }
+};

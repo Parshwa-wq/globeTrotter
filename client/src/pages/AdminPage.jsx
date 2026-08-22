@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, LayoutDashboard, MapPin, Activity, Trash2, ArrowLeft, Loader2, ShieldAlert } from 'lucide-react';
+import { Users, LayoutDashboard, MapPin, Activity, Trash2, ArrowLeft, Loader2, ShieldAlert, Shield, ShieldMinus } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -57,6 +57,16 @@ export default function AdminPage() {
     } finally {
       setDeleting(false);
       setUserToDelete(null);
+    }
+  };
+
+  const executeRoleChange = async (targetId, newRole) => {
+    try {
+      await api.put(`/admin/users/${targetId}/role`, { role: newRole });
+      setUsers(users.map(u => u.id === targetId ? { ...u, role: newRole } : u));
+      addToast(`User role updated to ${newRole.toUpperCase()}.`, 'success');
+    } catch (err) {
+      addToast(err.response?.data?.message || 'Failed to update user role.', 'error');
     }
   };
 
@@ -150,13 +160,32 @@ export default function AdminPage() {
                   </td>
                   <td className="py-4 px-4 text-right">
                     {u.id !== user.id && (
-                      <button 
-                        onClick={() => setUserToDelete(u.id)}
-                        className="text-white/20 hover:text-red-500 transition-colors p-2"
-                        title="Purge User"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        {u.role === 'admin' ? (
+                          <button 
+                            onClick={() => executeRoleChange(u.id, 'user')}
+                            className="text-white/20 hover:text-orange-500 transition-colors p-2"
+                            title="Demote to User"
+                          >
+                            <ShieldMinus className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={() => executeRoleChange(u.id, 'admin')}
+                            className="text-white/20 hover:text-neon-cyan transition-colors p-2"
+                            title="Promote to Admin"
+                          >
+                            <Shield className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => setUserToDelete(u.id)}
+                          className="text-white/20 hover:text-red-500 transition-colors p-2"
+                          title="Purge User"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>

@@ -16,5 +16,6 @@ const adminCheck = (req, res, next) => {
 adminRouter.get('/stats', authMiddleware, adminCheck, adminController.getStats);
 adminRouter.get('/users', authMiddleware, adminCheck, adminController.getUsers);
 adminRouter.delete('/users/:id', authMiddleware, adminCheck, adminController.deleteUser);
+adminRouter.put('/users/:id/role', authMiddleware, adminCheck, adminController.updateUserRole);
 
 module.exports = adminRouter;

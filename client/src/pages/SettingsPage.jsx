@@ -110,8 +110,16 @@ export default function SettingsPage() {
           <div className="w-full h-px bg-[#222] my-6"></div>
           
           <div className="w-full flex items-center justify-between text-xs font-mono text-white/40 uppercase tracking-widest">
-            <span>Account Status</span>
-            <span className="text-neon-green">Active</span>
+            <span>Clearance Level</span>
+            {user?.role === 'admin' ? (
+              <span className="text-red-500 border border-red-500/30 bg-red-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Shield className="w-3 h-3" /> Admin
+              </span>
+            ) : (
+              <span className="text-neon-cyan border border-neon-cyan/30 bg-neon-cyan/10 px-2 py-0.5 rounded-full">
+                Operative
+              </span>
+            )}
           </div>
         </motion.div>
 
@@ -224,7 +232,7 @@ export default function SettingsPage() {
               {user?.role === 'admin' && (
                 <Link 
                   to="/admin"
-                  className="w-full flex items-center justify-center p-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 rounded-xl transition-all mt-4"
+                  className="w-full flex items-center justify-center p-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 rounded-xl transition-all"
                 >
                   <div className="text-sm font-bold text-red-500 flex items-center gap-2">
                     <Shield className="w-4 h-4" /> Admin Console
