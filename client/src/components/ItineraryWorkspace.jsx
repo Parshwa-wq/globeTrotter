@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Plus, Calendar, Clock, Map, MoreVertical, Loader2, X, Navigation, Trash2 } from 'lucide-react';
+import { MapPin, Plus, Calendar, Clock, Map, MoreVertical, Loader2, X, Navigation, Trash2, Compass } from 'lucide-react';
 import api from '../services/api';
 import { Skeleton } from './Skeleton';
 import StopActivities from './StopActivities';
@@ -22,6 +22,15 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate,
 
   const minDate = formatInputDate(tripStartDate);
   const maxDate = formatInputDate(tripEndDate);
+
+  const getGradient = (name) => {
+    if (!name) return 'bg-[#0a0a0a]';
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    const h1 = Math.abs(hash) % 360;
+    const h2 = (h1 + 40) % 360;
+    return `linear-gradient(135deg, hsl(${h1}, 70%, 15%), hsl(${h2}, 70%, 5%))`;
+  };
 
   const toggleStopExpansion = (id) => {
     setExpandedStops(prev => 
@@ -187,26 +196,36 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate,
                 <MapPin className="w-5 h-5" />
               </div>
 
-              {/* Spacer for alternating layout */}
-              <div className="hidden md:block w-[calc(50%-2.5rem)]"></div>
-
               {/* Card */}
-              <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-5 bento-card hover:border-white/20 transition-colors relative">
-                <div className="absolute top-0 right-0 p-4">
-                   <span className="font-mono text-[10px] text-neon-green border border-neon-green/30 bg-neon-green/10 px-2 py-1 rounded">STOP {index + 1}</span>
+              <div 
+                className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-5 bento-card border-[#222] hover:border-white/20 transition-all duration-500 relative overflow-hidden"
+                style={{ background: getGradient(stop.stop_name) }}
+              >
+                {/* Black overlay that fades out on hover to reveal the 'wallpaper' gradient */}
+                <div className="absolute inset-0 bg-[#0a0a0a] transition-opacity duration-500 group-hover:opacity-40 pointer-events-none" />
+
+                {/* Compass Watermark */}
+                <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-all duration-500 pointer-events-none">
+                  <Compass className="w-48 h-48 -rotate-12 translate-x-12 -translate-y-12 text-white scale-75 group-hover:scale-100 transition-transform duration-700" />
+                </div>
+
+                <div className="absolute top-0 right-0 p-4 z-10">
+                   <span className="font-mono text-[10px] text-neon-green border border-neon-green/30 bg-black/50 backdrop-blur-sm px-2 py-1 rounded">STOP {index + 1}</span>
                 </div>
                 
-                <h3 className="font-grotesk text-xl font-bold mb-4 group-hover:text-neon-green transition-colors">{stop.stop_name}</h3>
-                
-                <div className="flex items-center gap-4 text-xs font-mono text-white/50">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>{new Date(stop.arrival_date).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</span>
-                  </div>
-                  <div className="w-1 h-px bg-[#333]"></div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>{new Date(stop.departure_date).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</span>
+                <div className="relative z-10">
+                  <h3 className="font-grotesk text-xl font-bold mb-4 group-hover:text-neon-green transition-colors">{stop.stop_name}</h3>
+                  
+                  <div className="flex items-center gap-4 text-xs font-mono text-white/50">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{new Date(stop.arrival_date).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</span>
+                    </div>
+                    <div className="w-1 h-px bg-[#333]"></div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{new Date(stop.departure_date).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}</span>
+                    </div>
                   </div>
                 </div>
 
