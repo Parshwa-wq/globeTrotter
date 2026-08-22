@@ -11,9 +11,17 @@ app.use(express.json());
 
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
+const tripRoutes = require('./routes/tripRoutes');
+const stopRoutes = require('./routes/stopRoutes');
+const activityRoutes = require('./routes/activityRoutes');
+const shareRoutes = require('./routes/shareRoutes');
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/trips', tripRoutes);
+app.use('/api/trips/:tripId/stops', stopRoutes);
+app.use('/api/stops/:stopId/activities', activityRoutes);
+app.use('/api/share', shareRoutes);
 
 // Test Database Connection Route
 app.get('/api/test-db', async (req, res) => {
@@ -25,9 +33,6 @@ app.get('/api/test-db', async (req, res) => {
     res.status(500).json({ error: 'Database connection failed' });
   }
 });
-
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/trips', require('./routes/tripRoutes'));
 
 // Root Route
 app.get('/', (req, res) => {
