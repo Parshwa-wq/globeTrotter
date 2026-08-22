@@ -10,5 +10,6 @@ authRouter.post('/login', authController.login);
 authRouter.get('/me', authMiddleware, (req, res) => {
     res.json({ success: true, user: req.user });
 });
+authRouter.delete('/me', authMiddleware, authController.deleteUser);
 
 module.exports = authRouter;

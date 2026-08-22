@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Clock, Tag, X, Loader2, Trash2 } from 'lucide-react';
 import api from '../services/api';
+import ConfirmModal from './ConfirmModal';
+import { useToast } from '../context/ToastContext';
 
 const CATEGORIES = [
   'sightseeing', 'food', 'adventure', 'shopping', 
@@ -20,7 +22,7 @@ const CATEGORY_COLORS = {
   other: 'text-white/70 border-white/30 bg-white/10',
 };
 
-export default function StopActivities({ stopId, onClose, isReadOnly }) {
+const StopActivities = ({ stopId, onClose, isReadOnly }) => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -79,6 +81,10 @@ export default function StopActivities({ stopId, onClose, isReadOnly }) {
     return true;
   };
 
+  const { addToast } = useToast();
+  const [activityToDelete, setActivityToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
   const handleAddActivity = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -95,9 +101,10 @@ export default function StopActivities({ stopId, onClose, isReadOnly }) {
         start_time: '',
         end_time: ''
       });
+      addToast('Activity scheduled successfully.', 'success');
     } catch (err) {
       console.error('Error adding activity:', err);
-      alert('Failed to add activity.');
+      addToast('Failed to add activity.', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -106,7 +113,7 @@ export default function StopActivities({ stopId, onClose, isReadOnly }) {
   const handleAddExpense = async (e, activityId) => {
     e.preventDefault();
     if (!expenseData.amount || expenseData.amount <= 0) {
-      alert("Please enter a valid amount.");
+      addToast("Please enter a valid monetary amount.", "info");
       return;
     }
 
@@ -116,26 +123,30 @@ export default function StopActivities({ stopId, onClose, isReadOnly }) {
         ...expenseData,
         amount: parseFloat(expenseData.amount)
       });
-      // Added successfully!
-      alert("Expense logged successfully! View it in the Budget Dashboard.");
+      addToast("Expense logged successfully! View it in the Budget Dashboard.", "success");
       setAddingExpenseFor(null);
       setExpenseData({ description: '', amount: '', currency: 'USD' });
     } catch (err) {
       console.error('Error adding expense:', err);
-      alert('Failed to log expense. ' + (err.response?.data?.message || ''));
+      addToast('Failed to log expense. ' + (err.response?.data?.message || ''), 'error');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDeleteActivity = async (id) => {
-    if (!window.confirm("Delete this activity?")) return;
+  const executeDeleteActivity = async () => {
+    if (!activityToDelete) return;
+    setDeleting(true);
     try {
-      await api.delete(`/stops/${stopId}/activities/${id}`);
+      await api.delete(`/stops/${stopId}/activities/${activityToDelete}`);
       await fetchActivities();
+      addToast('Activity deleted.', 'success');
     } catch (err) {
       console.error('Error deleting activity:', err);
-      alert('Failed to delete activity.');
+      addToast('Failed to delete activity.', 'error');
+    } finally {
+      setDeleting(false);
+      setActivityToDelete(null);
     }
   };
 
@@ -209,9 +220,11 @@ export default function StopActivities({ stopId, onClose, isReadOnly }) {
               <div className="flex-1">
                 <h5 className="font-bold text-white text-sm flex items-center justify-between">
                   {act.title}
-                  <button onClick={() => handleDeleteActivity(act.id)} className="text-white/10 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  {!isReadOnly && (
+                    <button onClick={() => setActivityToDelete(act.id)} className="text-white/10 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100" title="Delete Activity">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </h5>
                 {(act.start_time || act.end_time) && (
                   <p className="font-mono text-[10px] text-white/40 flex items-center gap-1 mt-1">
@@ -286,6 +299,17 @@ export default function StopActivities({ stopId, onClose, isReadOnly }) {
           ))}
         </div>
       )}
+
+      <ConfirmModal 
+        isOpen={!!activityToDelete}
+        onClose={() => setActivityToDelete(null)}
+        onConfirm={executeDeleteActivity}
+        title="Delete Activity?"
+        message="Are you sure you want to delete this activity? Any logged expenses tied to it will also be erased."
+        isProcessing={deleting}
+      />
     </motion.div>
   );
-}
+};
+
+export default React.memo(StopActivities);

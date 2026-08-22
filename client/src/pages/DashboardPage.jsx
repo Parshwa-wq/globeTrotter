@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Calendar, ArrowRight, Zap, Target, Activity, Plane } from 'lucide-react';
 
@@ -27,11 +27,15 @@ export default function DashboardPage() {
     fetchTrips();
   }, []);
 
-  // Compute metrics
-  const activeTrips = trips.filter(t => t.status !== 'completed').length;
-  const upcomingTrip = trips
-    .filter(t => t.start_date && new Date(t.start_date) >= new Date(new Date().setHours(0,0,0,0)))
-    .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))[0];
+  // Compute metrics (Memoized to prevent re-computation on unrelated renders)
+  const { activeTrips, upcomingTrip } = useMemo(() => {
+    const active = trips.filter(t => t.status !== 'completed').length;
+    const upcoming = trips
+      .filter(t => t.start_date && new Date(t.start_date) >= new Date(new Date().setHours(0,0,0,0)))
+      .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))[0];
+    
+    return { activeTrips: active, upcomingTrip: upcoming };
+  }, [trips]);
 
   return (
     <div className="w-full">

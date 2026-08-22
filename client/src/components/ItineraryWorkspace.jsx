@@ -4,6 +4,8 @@ import { MapPin, Plus, Calendar, Clock, Map, MoreVertical, Loader2, X, Navigatio
 import api from '../services/api';
 import { Skeleton } from './Skeleton';
 import StopActivities from './StopActivities';
+import ConfirmModal from './ConfirmModal';
+import { useToast } from '../context/ToastContext';
 
 export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate, tripStatus }) {
   const [stops, setStops] = useState([]);
@@ -32,11 +34,11 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate,
     return `linear-gradient(135deg, hsl(${h1}, 70%, 15%), hsl(${h2}, 70%, 5%))`;
   };
 
-  const toggleStopExpansion = (id) => {
+  const toggleStopExpansion = React.useCallback((id) => {
     setExpandedStops(prev => 
       prev.includes(id) ? prev.filter(sId => sId !== id) : [...prev, id]
     );
-  };
+  }, []);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -65,6 +67,10 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate,
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const { addToast } = useToast();
+  const [stopToDelete, setStopToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
   const handleAddStop = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -72,24 +78,29 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate,
       await api.post(`/trips/${tripId}/stops`, formData);
       await fetchStops();
       setIsAddingStop(false);
-      // Reset form (keep dates if possible)
       setFormData(prev => ({ ...prev, stop_name: '' }));
+      addToast('Stop initialized successfully.', 'success');
     } catch (err) {
       console.error('Failed to add stop:', err);
-      alert('Failed to add stop. Check dates and try again.');
+      addToast('Failed to add stop. Check dates and try again.', 'error');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDeleteStop = async (id) => {
-    if (!window.confirm("Are you sure you want to completely delete this stop and all its activities?")) return;
+  const executeDeleteStop = async () => {
+    if (!stopToDelete) return;
+    setDeleting(true);
     try {
-      await api.delete(`/trips/${tripId}/stops/${id}`);
+      await api.delete(`/trips/${tripId}/stops/${stopToDelete}`);
       await fetchStops();
+      addToast('Stop and all nested activities deleted.', 'success');
     } catch (err) {
       console.error('Failed to delete stop:', err);
-      alert('Failed to delete stop.');
+      addToast('Failed to delete stop.', 'error');
+    } finally {
+      setDeleting(false);
+      setStopToDelete(null);
     }
   };
 
@@ -241,7 +252,7 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate,
                    </button>
                    {!isReadOnly && (
                      <button 
-                       onClick={() => handleDeleteStop(stop.id)}
+                       onClick={() => setStopToDelete(stop.id)}
                        className="text-white/30 hover:text-red-500 transition-colors"
                        title="Delete Stop"
                      >
@@ -252,7 +263,7 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate,
 
                 <AnimatePresence>
                   {expandedStops.includes(stop.id) && (
-                    <StopActivities stopId={stop.id} onClose={() => toggleStopExpansion(stop.id)} isReadOnly={isReadOnly} />
+                    <StopActivities stopId={stop.id} isReadOnly={isReadOnly} />
                   )}
                 </AnimatePresence>
               </div>
@@ -260,6 +271,15 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate,
           ))}
         </div>
       )}
+
+      <ConfirmModal 
+        isOpen={!!stopToDelete}
+        onClose={() => setStopToDelete(null)}
+        onConfirm={executeDeleteStop}
+        title="Delete Stop?"
+        message="Are you sure you want to completely delete this stop? All activities and budget expenses associated with it will be permanently erased."
+        isProcessing={deleting}
+      />
     </div>
   );
 }

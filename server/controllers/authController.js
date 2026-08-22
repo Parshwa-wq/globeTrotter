@@ -71,3 +71,23 @@ exports.login = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error during login' });
     }
 };
+
+// @route   DELETE /api/auth/me
+// @desc    Delete current user and all associated data
+exports.deleteUser = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        
+        // Delete user (MySQL ON DELETE CASCADE will handle trips, stops, activities, expenses)
+        const [result] = await db.query('DELETE FROM users WHERE id = ?', [userId]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        
+        res.json({ success: true, message: 'Account and all associated data deleted successfully' });
+    } catch (error) {
+        console.error('Account Deletion Error:', error);
+        res.status(500).json({ success: false, message: 'Server error during account deletion' });
+    }
+};

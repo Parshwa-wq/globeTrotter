@@ -16,6 +16,8 @@ import TripBudgetPage from './pages/TripBudgetPage';
 import SettingsPage from './pages/SettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
+import SharedTripPage from './pages/SharedTripPage';
+
 function App() {
   return (
     <Routes>
@@ -24,6 +26,9 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
       </Route>
+
+      {/* Public Share Route */}
+      <Route path="/share/:shareId" element={<SharedTripPage />} />
 
       {/* Protected App Routes */}
       <Route element={<MainLayout />}>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function AuthForm({ initialMode = "login" }) {
@@ -9,16 +10,15 @@ export default function AuthForm({ initialMode = "login" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [localError, setLocalError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
   const { login, register } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLocalError("");
     setIsProcessing(true);
 
     try {
@@ -30,21 +30,21 @@ export default function AuthForm({ initialMode = "login" }) {
       }
 
       if (result.success) {
+        addToast(`Welcome back${isLogin ? '' : ', ' + name}!`, 'success');
         navigate("/dashboard");
       } else {
-        setLocalError(result.message || "Authentication failed");
+        addToast(result.message || "Authentication failed", 'error');
         setIsProcessing(false);
       }
     } catch (error) {
       console.error("Auth Exception:", error);
-      setLocalError("An unexpected error occurred");
+      addToast("An unexpected error occurred", 'error');
       setIsProcessing(false);
     }
   };
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
-    setLocalError("");
   };
 
   return (
@@ -79,23 +79,6 @@ export default function AuthForm({ initialMode = "login" }) {
               {isLogin ? "Authenticate to access your dashboard." : "Create your GlobeTrotter account."}
             </p>
           </div>
-
-          {/* Error Message */}
-          <AnimatePresence>
-            {localError && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden mb-6"
-              >
-                <div className="p-3 rounded-lg bg-red-950/30 border border-red-500/20 text-red-400 text-sm font-medium flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />
-                  {localError}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           <form onSubmit={handleSubmit} className="space-y-5 mb-8">
             <AnimatePresence mode="popLayout">

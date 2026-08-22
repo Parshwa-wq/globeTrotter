@@ -1,14 +1,47 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { User, Mail, LogOut, Shield, Bell, Moon, CreditCard, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { User, Mail, LogOut, Shield, Bell, Moon, CreditCard, ChevronRight, Trash2, AlertTriangle, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { getPreferredCurrency, setPreferredCurrency } from '../utils/currency';
+import { useToast } from '../context/ToastContext';
 
 export default function SettingsPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, deleteAccount } = useAuth();
   const navigate = useNavigate();
-  const [currency, setCurrency] = useState('USD');
+  const { addToast } = useToast();
+  const [currency, setCurrencyState] = useState(getPreferredCurrency());
   const [notifications, setNotifications] = useState(true);
+  
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const setCurrency = (curr) => {
+    setCurrencyState(curr);
+    setPreferredCurrency(curr);
+    addToast(`Global denomination set to ${curr}`, 'success');
+  };
+
+  const handleToggleNotifications = () => {
+    setNotifications(!notifications);
+    addToast(
+      !notifications ? 'Push notifications enabled.' : 'Push notifications disabled.',
+      !notifications ? 'success' : 'info'
+    );
+  };
+
+  const executeDeleteAccount = async () => {
+    setDeleting(true);
+    const result = await deleteAccount();
+    if (result.success) {
+      addToast('Account and all associated data permanently deleted.', 'success');
+      navigate('/login');
+    } else {
+      addToast(result.message || 'Failed to delete account.', 'error');
+      setShowDeleteConfirm(false);
+      setDeleting(false);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -121,32 +154,117 @@ export default function SettingsPage() {
             </div>
           </motion.div>
 
-          {/* Security & Data */}
-          <motion.div variants={itemVariants} className="md:col-span-2 bento-card p-6">
+          {/* Notifications Preference */}
+          <motion.div variants={itemVariants} className="bento-card p-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+              <Bell className="w-24 h-24 -rotate-12 translate-x-4 -translate-y-4" />
+            </div>
             <h3 className="font-mono text-xs uppercase tracking-widest text-white/50 mb-4 flex items-center gap-2">
-              <Shield className="w-4 h-4 text-neon-orange" /> Security & Session
+              <Bell className="w-4 h-4 text-neon-orange" /> Notifications
+            </h3>
+            <div className="text-xl font-grotesk font-bold text-white mb-2">System Alerts</div>
+            <p className="text-sm text-white/40 font-inter mb-4">Receive updates for trip modifications and budget thresholds.</p>
+            <button 
+              onClick={handleToggleNotifications}
+              className={`w-full border rounded-lg p-3 flex items-center justify-between transition-all ${
+                notifications 
+                  ? 'bg-neon-orange/10 border-neon-orange' 
+                  : 'bg-[#111] border-[#222] hover:border-white/20'
+              }`}
+            >
+              <span className={`text-sm font-bold ${notifications ? 'text-neon-orange' : 'text-white/40'}`}>
+                {notifications ? 'Enabled' : 'Disabled'}
+              </span>
+              <div className={`w-10 h-5 rounded-full relative transition-colors ${notifications ? 'bg-neon-orange/30' : 'bg-[#222]'}`}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full shadow-md transition-all ${
+                  notifications ? 'right-1 bg-neon-orange shadow-[0_0_10px_rgba(255,165,0,0.5)]' : 'left-1 bg-white/40'
+                }`}></div>
+              </div>
+            </button>
+          </motion.div>
+
+          {/* Security & Data */}
+          <motion.div variants={itemVariants} className="bento-card p-6">
+            <h3 className="font-mono text-xs uppercase tracking-widest text-white/50 mb-4 flex items-center gap-2">
+              <Shield className="w-4 h-4 text-red-500" /> Security
             </h3>
             <div className="space-y-2">
-              <button className="w-full flex items-center justify-between p-4 bg-[#111] hover:bg-[#151515] border border-[#222] hover:border-white/20 rounded-xl transition-colors group">
+              <button 
+                onClick={() => setShowDeleteConfirm(true)}
+                className="w-full flex items-center justify-between p-4 bg-red-950/20 hover:bg-red-900/40 border border-red-500/20 hover:border-red-500/50 rounded-xl transition-colors group"
+              >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
-                    <LogOut className="w-4 h-4 text-white/50 group-hover:text-red-500 transition-colors" />
+                  <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center">
+                    <Trash2 className="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" />
                   </div>
-                  <div className="text-sm font-bold text-white/80 group-hover:text-red-500 transition-colors">Sign Out Everywhere</div>
+                  <div className="text-sm font-bold text-red-500 group-hover:text-red-400 transition-colors">Delete Account</div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/50 transition-colors" />
+                <span className="text-[10px] font-mono text-red-500/50 group-hover:text-red-500/80 transition-colors">DANGER ZONE</span>
               </button>
               
-              <button onClick={handleLogout} className="w-full flex items-center justify-between p-4 bg-[#111] hover:bg-red-500/10 border border-[#222] hover:border-red-500/30 rounded-xl transition-all group mt-2">
-                <div className="flex items-center gap-3">
-                  <div className="text-sm font-bold text-red-500">Log Out of Current Session</div>
-                </div>
+              <button 
+                onClick={handleLogout} 
+                className="w-full flex items-center justify-center p-4 bg-[#111] hover:bg-red-500/10 border border-[#222] hover:border-red-500/30 rounded-xl transition-all group mt-2"
+              >
+                <div className="text-sm font-bold text-red-500">Log Out</div>
               </button>
             </div>
           </motion.div>
 
         </div>
       </motion.div>
+
+      {/* Custom Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => !deleting && setShowDeleteConfirm(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-[#0a0a0a] border border-[#222] rounded-2xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center shrink-0 border border-red-500/20">
+                    <AlertTriangle className="w-6 h-6 text-red-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-grotesk text-xl font-bold text-white mb-2">Delete Account?</h3>
+                    <p className="text-sm text-white/50 font-inter mb-4">
+                      This action cannot be undone. This will permanently delete your account, along with all of your trips, stops, activities, and financial data.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 mt-6">
+                  <button 
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={deleting}
+                    className="flex-1 py-3 px-4 rounded-xl border border-[#333] hover:bg-[#111] text-white font-mono text-sm uppercase tracking-widest transition-colors disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={executeDeleteAccount}
+                    disabled={deleting}
+                    className="flex-1 py-3 px-4 rounded-xl bg-red-500 hover:bg-red-600 text-white font-mono text-sm uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(239,68,68,0.3)] disabled:opacity-50"
+                  >
+                    {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    Confirm Delete
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

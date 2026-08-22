@@ -4,6 +4,9 @@ import { ArrowLeft, Wallet, TrendingUp, AlertCircle, MapPin, Receipt, Plane, Plu
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../services/api';
 import { Skeleton } from '../components/Skeleton';
+import { getPreferredCurrency, formatCurrency, convertCurrency } from '../utils/currency';
+import { useToast } from '../context/ToastContext';
+import ConfirmModal from '../components/ConfirmModal';
 
 export default function TripBudgetPage() {
   const { id } = useParams();
@@ -43,10 +46,14 @@ export default function TripBudgetPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const { addToast } = useToast();
+  const [expenseToDelete, setExpenseToDelete] = useState(null); // { activityId, expenseId }
+  const [deleting, setDeleting] = useState(false);
+
   const handleAddExpense = async (e) => {
     e.preventDefault();
     if (!selectedActivityId) {
-      alert("Please select an activity to attach this expense to.");
+      addToast("Please select an activity to attach this expense to.", "info");
       return;
     }
     
@@ -59,22 +66,28 @@ export default function TripBudgetPage() {
       await fetchBudget();
       setIsAddingExpense(false);
       setFormData({ description: '', amount: '', currency: 'USD' });
+      addToast('Expense logged successfully.', 'success');
     } catch (err) {
       console.error('Error adding expense:', err);
-      alert('Failed to log expense. Verify inputs and try again.');
+      addToast('Failed to log expense. Verify inputs and try again.', 'error');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDeleteExpense = async (activityId, expenseId) => {
-    if (!window.confirm("Delete this expense?")) return;
+  const executeDeleteExpense = async () => {
+    if (!expenseToDelete) return;
+    setDeleting(true);
     try {
-      await api.delete(`/activities/${activityId}/expenses/${expenseId}`);
+      await api.delete(`/activities/${expenseToDelete.activityId}/expenses/${expenseToDelete.expenseId}`);
       await fetchBudget();
+      addToast('Expense deleted.', 'success');
     } catch (err) {
       console.error('Failed to delete expense:', err);
-      alert('Failed to delete expense.');
+      addToast('Failed to delete expense.', 'error');
+    } finally {
+      setDeleting(false);
+      setExpenseToDelete(null);
     }
   };
 
@@ -106,14 +119,20 @@ export default function TripBudgetPage() {
     );
   }
 
-  // Extract all activities from budget.by_stop for the select dropdown
-  const allActivities = [];
-  budget.by_stop?.forEach(stop => {
+  const prefCurrency = getPreferredCurrency();
+
+  // FX Normalization: Recalculate true totals using static exchange rates
+  let trueTotal = 0;
+  const normalizedStops = budget?.by_stop?.map(stop => {
+    let stopTotal = 0;
     stop.expenses?.forEach(exp => {
-      // we don't have the raw activities, only expenses!
-      // wait, we need activities to add expenses. We must fetch them if we want to add expenses here.
+      const amount = parseFloat(exp.amount);
+      const converted = convertCurrency(amount, exp.currency || 'USD', prefCurrency);
+      stopTotal += converted;
     });
-  });
+    trueTotal += stopTotal;
+    return { ...stop, normalizedTotal: stopTotal };
+  }) || [];
 
   return (
     <div className="w-full">
@@ -143,10 +162,10 @@ export default function TripBudgetPage() {
            <div className="relative z-10">
               <div className="flex items-center gap-2 text-white/50 mb-2">
                 <Wallet className="w-4 h-4 text-neon-green" />
-                <span className="font-mono text-xs uppercase tracking-widest">Total Spent</span>
+                <span className="font-mono text-xs uppercase tracking-widest">Total Spent ({prefCurrency})</span>
               </div>
               <div className="font-grotesk text-5xl font-bold text-white">
-                {budget.currency} {budget.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                {formatCurrency(trueTotal, prefCurrency)}
               </div>
            </div>
         </div>
@@ -169,8 +188,8 @@ export default function TripBudgetPage() {
       </h2>
 
       <div className="space-y-6">
-        {budget.by_stop && budget.by_stop.length > 0 ? (
-          budget.by_stop.map((stop) => (
+        {normalizedStops.length > 0 ? (
+          normalizedStops.map((stop) => (
             <div key={stop.stop_id} className="bento-card border border-[#222]">
               <div className="flex justify-between items-center mb-4 pb-4 border-b border-[#222]">
                 <div>
@@ -178,9 +197,9 @@ export default function TripBudgetPage() {
                 </div>
                 <div className="text-right">
                   <div className="font-mono text-sm text-neon-orange">
-                    {budget.currency} {parseFloat(stop.total).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    {formatCurrency(stop.normalizedTotal, prefCurrency)}
                   </div>
-                  <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest">Subtotal</div>
+                  <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest">Subtotal ({prefCurrency})</div>
                 </div>
               </div>
 
@@ -198,11 +217,18 @@ export default function TripBudgetPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <div className="font-mono text-sm text-white">
-                          {exp.currency} {parseFloat(exp.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        <div className="flex flex-col items-end">
+                          <div className="font-mono text-sm text-white">
+                            {formatCurrency(parseFloat(exp.amount), exp.currency || 'USD')}
+                          </div>
+                          {(exp.currency || 'USD') !== prefCurrency && (
+                             <div className="text-[9px] font-mono text-neon-orange/80">
+                               ≈ {formatCurrency(convertCurrency(parseFloat(exp.amount), exp.currency || 'USD', prefCurrency), prefCurrency)}
+                             </div>
+                          )}
                         </div>
                         <button 
-                          onClick={() => handleDeleteExpense(exp.activity_id, exp.id)}
+                          onClick={() => setExpenseToDelete({ activityId: exp.activity_id, expenseId: exp.id })}
                           className="text-white/20 hover:text-red-500 transition-colors"
                           title="Delete Expense"
                         >
@@ -225,6 +251,15 @@ export default function TripBudgetPage() {
           </div>
         )}
       </div>
+
+      <ConfirmModal 
+        isOpen={!!expenseToDelete}
+        onClose={() => setExpenseToDelete(null)}
+        onConfirm={executeDeleteExpense}
+        title="Delete Expense?"
+        message="Are you sure you want to permanently delete this expense from your budget?"
+        isProcessing={deleting}
+      />
     </div>
   );
 }
