@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function AuthForm({ initialMode = "login" }) {
   const [isLogin, setIsLogin] = useState(initialMode === "login");
@@ -10,6 +11,7 @@ export default function AuthForm({ initialMode = "login" }) {
   const [name, setName] = useState("");
   const [localError, setLocalError] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const { login, register } = useAuth();
   const navigate = useNavigate();
@@ -135,15 +137,24 @@ export default function AuthForm({ initialMode = "login" }) {
 
             <div>
               <label className="block text-[10px] font-mono text-[#666] mb-2 uppercase tracking-widest">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isProcessing}
-                className="w-full bg-[#0d0d0d] border border-[#222] rounded-lg px-4 py-3 text-gray-300 font-mono text-sm focus:outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green transition-all disabled:opacity-50"
-                placeholder="••••••••"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isProcessing}
+                  className="w-full bg-[#0d0d0d] border border-[#222] rounded-lg px-4 py-3 text-gray-300 font-mono text-sm focus:outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green transition-all disabled:opacity-50 pr-12"
+                  placeholder="••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666] hover:text-neon-green transition-colors focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <button
