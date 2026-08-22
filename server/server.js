@@ -7,13 +7,13 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json()); // Parses incoming JSON requests
+app.use(express.json());
 
 // Test Database Connection Route
 app.get('/api/test-db', async (req, res) => {
   try {
-    const result = await db.query('SELECT NOW()');
-    res.json({ message: 'Database is connected!', time: result.rows[0].now });
+    const [rows] = await db.query('SELECT NOW() AS time');
+    res.json({ message: 'MySQL is connected!', time: rows[0].time });
   } catch (error) {
     console.error('Database connection error:', error);
     res.status(500).json({ error: 'Database connection failed' });
@@ -22,7 +22,7 @@ app.get('/api/test-db', async (req, res) => {
 
 // Root Route
 app.get('/', (req, res) => {
-  res.send('GlobeTrotter API is running 🚀');
+  res.send('GlobeTrotter API is running (MySQL Backend) 🚀');
 });
 
 const PORT = process.env.PORT || 5000;
