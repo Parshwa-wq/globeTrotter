@@ -1,9 +1,16 @@
 const express = require('express');
-const router = express.Router();
 const authController = require('../controllers/authController');
+const { authMiddleware } = require('../middleware/auth');
+const validateRequest = require('../middleware/validator');
+const { registerRules, loginRules } = require('../validations/rules');
 
-// Define the routes and map them to the controller functions
-router.post('/register', authController.register);
-router.post('/login', authController.login);
+// Fix: Use express.Router()
+const authRouter = express.Router();
 
-module.exports = router;
+authRouter.post('/register', registerRules, validateRequest, authController.register);
+authRouter.post('/login', loginRules, validateRequest, authController.login);
+authRouter.get('/me', authMiddleware, (req, res) => {
+    res.json({ success: true, user: req.user });
+});
+
+module.exports = authRouter;

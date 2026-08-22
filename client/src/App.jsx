@@ -9,6 +9,9 @@ import MainLayout from './layouts/MainLayout';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
+import TripsPage from './pages/TripsPage';
+import CreateTripPage from './pages/CreateTripPage';
+import TripDetailsPage from './pages/TripDetailsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -25,6 +28,9 @@ function App() {
         {/* Redirect root to dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/trips" element={<TripsPage />} />
+        <Route path="/trips/new" element={<CreateTripPage />} />
+        <Route path="/trips/:id" element={<TripDetailsPage />} />
       </Route>
 
       {/* 404 Route */}

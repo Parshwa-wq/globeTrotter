@@ -25,7 +25,7 @@ export default function MainLayout() {
         <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-neon-cyan/5 blur-[150px]" />
       </div>
 
-      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-32">
+      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-8 min-h-screen flex flex-col">
         <Outlet />
       </main>
     </div>

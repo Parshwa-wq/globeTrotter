@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, LayoutGroup } from 'framer-motion';
 import { LayoutDashboard, Map, Activity, Settings } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -16,7 +16,18 @@ export function PillNavbar() {
     <>
       {/* Main Core Navigation */}
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
-        <div className="flex items-center gap-1 p-1.5 bg-[#0a0a0a]/80 backdrop-blur-xl border border-[#1a1a1a] rounded-full shadow-2xl">
+        <div className="relative flex items-center p-1.5 bg-[#0a0a0a]/80 backdrop-blur-xl border border-[#1a1a1a] rounded-full shadow-2xl">
+          
+          {/* The Single Sliding Background Pill */}
+          <motion.div
+            className="absolute top-1.5 bottom-1.5 left-1.5 w-[140px] bg-neon-green rounded-full shadow-[0_0_15px_rgba(57,255,20,0.3)]"
+            initial={false}
+            animate={{
+              x: Math.max(0, navItems.findIndex(item => location.pathname.startsWith(item.id))) * 140,
+            }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          />
+
           {navItems.map((item) => {
             const isActive = location.pathname.startsWith(item.id);
             const Icon = item.icon;
@@ -25,20 +36,10 @@ export function PillNavbar() {
               <Link
                 key={item.id}
                 to={item.id}
-                className="relative px-5 py-2.5 rounded-full flex items-center gap-2 text-sm font-mono uppercase tracking-widest transition-colors duration-300"
-                style={{ color: isActive ? '#000' : 'rgba(255,255,255,0.5)' }}
+                className={`relative z-10 w-[140px] py-2.5 rounded-full flex items-center justify-center gap-2 text-sm font-mono uppercase tracking-widest transition-colors duration-300 ${isActive ? 'text-black font-bold' : 'text-white/50 hover:text-white'}`}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="active-pill"
-                    className="absolute inset-0 bg-neon-green rounded-full"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <span className="relative z-10 flex items-center gap-2">
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden md:block font-bold">{item.label}</span>
-                </span>
+                <Icon className="w-4 h-4" />
+                <span className="hidden md:block">{item.label}</span>
               </Link>
             );
           })}
