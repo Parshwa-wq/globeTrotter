@@ -11,9 +11,10 @@
 |------------- |-------------------------------------|-----------------|
 | **Frontend** | React (Vite) + React Router v6      | 🎨 Frontend Dev |
 | **Backend**  | Node.js + Express.js                | ⚙️ Backend Dev  |
-| **Database** | PostgreSQL (local via pgAdmin/XAMPP) | 🗄️ Database Dev |
+| **Database** | MySQL (local via XAMPP)             | 🗄️ Database Dev |
 | **Auth**     | JWT (JSON Web Tokens) + bcrypt      | ⚙️ Backend Dev  |
-| **Styling**  | CSS Modules / Vanilla CSS           | 🎨 Frontend Dev |
+| **UI/UX**    | Framer Motion + Lucide React        | 🎨 Frontend Dev |
+| **Styling**  | Vanilla CSS (Dark/Neon Theme)       | 🎨 Frontend Dev |
 
 ---
 
@@ -543,10 +544,10 @@ VITE_API_URL=http://localhost:5000/api
 ## ✅ Quick Start Commands
 
 ```bash
-# Database Dev
-psql -U postgres -c "CREATE DATABASE globetrotter_db;"
-psql -U postgres -d globetrotter_db -f database/schema.sql
-psql -U postgres -d globetrotter_db -f database/seed.sql
+# Database Dev (XAMPP MySQL)
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS globetrotter_db;"
+mysql -u root globetrotter_db < database/schema.sql
+mysql -u root globetrotter_db < database/seed.sql
 
 # Backend Dev
 cd server
