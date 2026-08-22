@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Layouts
@@ -14,11 +14,19 @@ import CreateTripPage from './pages/CreateTripPage';
 import TripDetailsPage from './pages/TripDetailsPage';
 import TripBudgetPage from './pages/TripBudgetPage';
 import SettingsPage from './pages/SettingsPage';
+import AdminPage from './pages/AdminPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 import SharedTripPage from './pages/SharedTripPage';
 
 function App() {
+  useEffect(() => {
+    const theme = localStorage.getItem('globetrotter_theme');
+    if (theme === 'light') {
+      document.body.classList.add('light-mode');
+    }
+  }, []);
+
   return (
     <Routes>
       {/* Public Auth Routes */}
@@ -40,6 +48,7 @@ function App() {
         <Route path="/trips/:id" element={<TripDetailsPage />} />
         <Route path="/trips/:id/budget" element={<TripBudgetPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Route>
 
       {/* 404 Route */}

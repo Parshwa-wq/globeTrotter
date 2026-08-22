@@ -12,6 +12,7 @@ export default function SettingsPage() {
   const { addToast } = useToast();
   const [currency, setCurrencyState] = useState(getPreferredCurrency());
   const [notifications, setNotifications] = useState(true);
+  const [lightMode, setLightMode] = useState(document.body.classList.contains('light-mode'));
   
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -28,6 +29,13 @@ export default function SettingsPage() {
       !notifications ? 'Push notifications enabled.' : 'Push notifications disabled.',
       !notifications ? 'success' : 'info'
     );
+  };
+
+  const handleToggleTheme = () => {
+    const isLight = document.body.classList.toggle('light-mode');
+    setLightMode(isLight);
+    localStorage.setItem('globetrotter_theme', isLight ? 'light' : 'dark');
+    addToast(`Switched to ${isLight ? 'Light' : 'Dark'} Mode`, 'info');
   };
 
   const executeDeleteAccount = async () => {
@@ -109,24 +117,6 @@ export default function SettingsPage() {
 
         {/* Preferences Grid */}
         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Theme Preference (Read Only Showcase) */}
-          <motion.div variants={itemVariants} className="bento-card p-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-              <Moon className="w-24 h-24 -rotate-12 translate-x-4 -translate-y-4" />
-            </div>
-            <h3 className="font-mono text-xs uppercase tracking-widest text-white/50 mb-4 flex items-center gap-2">
-              <Moon className="w-4 h-4 text-neon-green" /> Theme
-            </h3>
-            <div className="text-xl font-grotesk font-bold text-white mb-2">Dark Mode</div>
-            <p className="text-sm text-white/40 font-inter mb-4">Hardcoded to strictly adhere to Finvest visual aesthetics.</p>
-            <div className="w-full bg-[#111] border border-[#222] rounded-lg p-3 flex items-center justify-between">
-              <span className="text-sm text-white/70">System Sync</span>
-              <div className="w-10 h-5 bg-neon-green/20 rounded-full relative">
-                <div className="absolute right-1 top-0.5 w-4 h-4 bg-neon-green rounded-full shadow-[0_0_10px_rgba(57,255,20,0.5)]"></div>
-              </div>
-            </div>
-          </motion.div>
-
           {/* Currency Preference (Interactive) */}
           <motion.div variants={itemVariants} className="bento-card p-6 relative overflow-hidden group">
              <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
@@ -183,6 +173,35 @@ export default function SettingsPage() {
             </button>
           </motion.div>
 
+          {/* Theme Preference */}
+          <motion.div variants={itemVariants} className="bento-card p-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+              <Moon className="w-24 h-24 -rotate-12 translate-x-4 -translate-y-4" />
+            </div>
+            <h3 className="font-mono text-xs uppercase tracking-widest text-white/50 mb-4 flex items-center gap-2">
+              <Moon className="w-4 h-4 text-neon-cyan" /> Appearance
+            </h3>
+            <div className="text-xl font-grotesk font-bold text-white mb-2">Display Mode</div>
+            <p className="text-sm text-white/40 font-inter mb-4">Toggle between tactical dark mode and high-contrast light mode.</p>
+            <button 
+              onClick={handleToggleTheme}
+              className={`w-full border rounded-lg p-3 flex items-center justify-between transition-all ${
+                lightMode 
+                  ? 'bg-neon-cyan/10 border-neon-cyan' 
+                  : 'bg-[#111] border-[#222] hover:border-white/20'
+              }`}
+            >
+              <span className={`text-sm font-bold ${lightMode ? 'text-neon-cyan' : 'text-white/40'}`}>
+                {lightMode ? 'Light Mode' : 'Dark Mode'}
+              </span>
+              <div className={`w-10 h-5 rounded-full relative transition-colors ${lightMode ? 'bg-neon-cyan/30' : 'bg-[#222]'}`}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full shadow-md transition-all ${
+                  lightMode ? 'right-1 bg-neon-cyan shadow-[0_0_10px_rgba(0,240,255,0.5)]' : 'left-1 bg-white/40'
+                }`}></div>
+              </div>
+            </button>
+          </motion.div>
+
           {/* Security & Data */}
           <motion.div variants={itemVariants} className="bento-card p-6">
             <h3 className="font-mono text-xs uppercase tracking-widest text-white/50 mb-4 flex items-center gap-2">
@@ -202,11 +221,22 @@ export default function SettingsPage() {
                 <span className="text-[10px] font-mono text-red-500/50 group-hover:text-red-500/80 transition-colors">DANGER ZONE</span>
               </button>
               
+              {user?.role === 'admin' && (
+                <Link 
+                  to="/admin"
+                  className="w-full flex items-center justify-center p-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 rounded-xl transition-all mt-4"
+                >
+                  <div className="text-sm font-bold text-red-500 flex items-center gap-2">
+                    <Shield className="w-4 h-4" /> Admin Console
+                  </div>
+                </Link>
+              )}
+              
               <button 
                 onClick={handleLogout} 
-                className="w-full flex items-center justify-center p-4 bg-[#111] hover:bg-red-500/10 border border-[#222] hover:border-red-500/30 rounded-xl transition-all group mt-2"
+                className="w-full flex items-center justify-center p-4 bg-[#111] hover:bg-white/5 border border-[#222] hover:border-white/20 rounded-xl transition-all group mt-2"
               >
-                <div className="text-sm font-bold text-red-500">Log Out</div>
+                <div className="text-sm font-bold text-white/50 group-hover:text-white transition-colors">Log Out</div>
               </button>
             </div>
           </motion.div>

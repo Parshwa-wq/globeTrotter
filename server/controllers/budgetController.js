@@ -10,24 +10,22 @@ exports.getTripBudget = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Trip not found or unauthorized' });
         }
 
-        // Get total budget across all stops/activities/expenses for this trip
+        // Get total budget grouped by currency for this trip
         const [totalResult] = await db.query(
-            `SELECT COALESCE(SUM(e.amount), 0) AS total
+            `SELECT e.currency, SUM(e.amount) AS total
              FROM expenses e
              JOIN activities a ON e.activity_id = a.id
              JOIN stops s ON a.stop_id = s.id
-             WHERE s.trip_id = ?`,
+             WHERE s.trip_id = ?
+             GROUP BY e.currency`,
             [req.params.tripId]
         );
 
-        // Get budget breakdown by stop
+        // Get stops for the trip (without flawed budget summation, frontend handles FX)
         const [byStop] = await db.query(
-            `SELECT s.id AS stop_id, s.stop_name, COALESCE(SUM(e.amount), 0) AS total
+            `SELECT s.id AS stop_id, s.stop_name
              FROM stops s
-             LEFT JOIN activities a ON s.id = a.stop_id
-             LEFT JOIN expenses e ON a.id = e.activity_id
              WHERE s.trip_id = ?
-             GROUP BY s.id
              ORDER BY s.arrival_date, s.sort_order`,
             [req.params.tripId]
         );
@@ -50,8 +48,7 @@ exports.getTripBudget = async (req, res) => {
         res.json({
             success: true,
             data: {
-                total: parseFloat(totalResult[0].total),
-                currency: 'INR',
+                totals_by_currency: totalResult,
                 by_stop: byStopDetailed
             }
         });

@@ -61,6 +61,30 @@
   *, *::before, *::after {
     box-sizing: inherit;
   }
+  
+  /* Hackathon Fast Light Mode using CSS Filter Inversion */
+  body.light-mode {
+    filter: invert(1) hue-rotate(180deg);
+    background-color: #ffffff;
+  }
+  
+  /* Fix for CSS filter breaking 'fixed' positioning: move scrolling to #root */
+  html:has(body.light-mode),
+  body.light-mode {
+    height: 100vh;
+    overflow: hidden;
+  }
+  body.light-mode #root {
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  /* Double-invert media so photos don't look like x-rays */
+  body.light-mode img, 
+  body.light-mode video {
+    filter: invert(1) hue-rotate(180deg);
+  }
 }
 
 @layer components {
