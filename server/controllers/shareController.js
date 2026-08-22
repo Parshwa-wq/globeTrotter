@@ -74,7 +74,7 @@ exports.getSharedTrip = async (req, res) => {
 
         // Get stops
         const [stops] = await db.query(
-            'SELECT * FROM stops WHERE trip_id = ? ORDER BY sort_order, day_number',
+            'SELECT * FROM stops WHERE trip_id = ? ORDER BY sort_order',
             [tripId]
         );
 
