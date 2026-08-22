@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Loader2, Share2, Trash2, AlertTriangle, Plane, Train, Car } from 'lucide-react';
+import { ArrowLeft, Calendar, Loader2, Share2, Trash2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../services/api';
 import { Skeleton } from '../components/Skeleton';

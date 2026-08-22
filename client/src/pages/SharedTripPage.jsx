@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, MapPin, Loader2, Copy, CheckCircle } from 'lucide-react';
+import { Calendar, MapPin, Loader2, Copy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../services/api';
 import { Skeleton } from '../components/Skeleton';
@@ -160,7 +160,7 @@ export default function SharedTripPage() {
            <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#333] to-transparent -translate-x-1/2 hidden md:block"></div>
 
            <div className="space-y-12 md:space-y-24">
-             {stops.length > 0 ? stops.map((stop, index) => (
+             {stops.length > 0 ? stops.map((stop) => (
                <motion.div 
                  key={stop.id}
                  initial={{ opacity: 0, y: 20 }}
