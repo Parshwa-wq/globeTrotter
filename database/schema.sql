@@ -63,15 +63,12 @@ CREATE TABLE trips (
 CREATE TABLE stops (
     id INT AUTO_INCREMENT PRIMARY KEY,
     trip_id INT NOT NULL,
-    city_name VARCHAR(200) NOT NULL,
-    country VARCHAR(100) NOT NULL,
-    day_number INT NOT NULL,
-    sort_order INT DEFAULT 0,
+    stop_name VARCHAR(200) NOT NULL,
     arrival_date DATE NOT NULL,
     departure_date DATE NOT NULL,
+    sort_order INT DEFAULT 0,
     CONSTRAINT fk_stops_trip FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
-    CONSTRAINT chk_stop_dates CHECK (departure_date >= arrival_date),
-    CONSTRAINT chk_day_number CHECK (day_number > 0)
+    CONSTRAINT chk_stop_dates CHECK (departure_date >= arrival_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================

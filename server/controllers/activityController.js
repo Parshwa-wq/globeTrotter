@@ -21,10 +21,13 @@ exports.addActivity = async (req, res) => {
     try {
         const { title, description, category, start_time, end_time, sort_order } = req.body;
 
-        // Verify the stop exists
-        const [stops] = await db.query('SELECT id FROM stops WHERE id = ?', [req.params.stopId]);
-        if (stops.length === 0) {
-            return res.status(404).json({ success: false, message: 'Stop not found' });
+        // VERIFY OWNERSHIP
+        const [authCheck] = await db.query(
+            `SELECT t.user_id FROM stops s JOIN trips t ON s.trip_id = t.id WHERE s.id = ?`, 
+            [req.params.stopId]
+        );
+        if (authCheck.length === 0 || authCheck[0].user_id !== req.user.userId) {
+            return res.status(403).json({ success: false, message: 'Unauthorized. You do not own this itinerary.' });
         }
 
         const [result] = await db.query(
@@ -45,6 +48,15 @@ exports.addActivity = async (req, res) => {
 exports.updateActivity = async (req, res) => {
     try {
         const { title, description, category, start_time, end_time, sort_order } = req.body;
+
+        // VERIFY OWNERSHIP
+        const [authCheck] = await db.query(
+            `SELECT t.user_id FROM stops s JOIN trips t ON s.trip_id = t.id WHERE s.id = ?`, 
+            [req.params.stopId]
+        );
+        if (authCheck.length === 0 || authCheck[0].user_id !== req.user.userId) {
+            return res.status(403).json({ success: false, message: 'Unauthorized.' });
+        }
 
         const [existing] = await db.query('SELECT id FROM activities WHERE id = ? AND stop_id = ?', [req.params.id, req.params.stopId]);
         if (existing.length === 0) {
@@ -71,6 +83,15 @@ exports.updateActivity = async (req, res) => {
 // @desc    Delete an activity
 exports.deleteActivity = async (req, res) => {
     try {
+        // VERIFY OWNERSHIP
+        const [authCheck] = await db.query(
+            `SELECT t.user_id FROM stops s JOIN trips t ON s.trip_id = t.id WHERE s.id = ?`, 
+            [req.params.stopId]
+        );
+        if (authCheck.length === 0 || authCheck[0].user_id !== req.user.userId) {
+            return res.status(403).json({ success: false, message: 'Unauthorized.' });
+        }
+
         const [existing] = await db.query('SELECT id FROM activities WHERE id = ? AND stop_id = ?', [req.params.id, req.params.stopId]);
         if (existing.length === 0) {
             return res.status(404).json({ success: false, message: 'Activity not found' });

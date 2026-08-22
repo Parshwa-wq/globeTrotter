@@ -15,13 +15,13 @@ exports.loginRules = [
 // Trip Rules
 exports.tripRules = [
     body('title').trim().notEmpty().withMessage('Trip title is required').isLength({ max: 200 }).withMessage('Title too long'),
-    body('start_date').isISO8601().withMessage('Valid start date is required').custom((value) => {
-        // Enforce no past dates (with some leeway for timezone differences, maybe just checking structure here is fine, 
-        // but let's check date)
+    body('start_date').isISO8601().withMessage('Valid start date is required').custom((value, { req }) => {
         const today = new Date();
         today.setHours(0,0,0,0);
         const start = new Date(value);
-        if (start < today) {
+        
+        // Only block past dates on new trip creation (POST), not updates (PUT)
+        if (req.method === 'POST' && start < today) {
             throw new Error('Start date cannot be in the past');
         }
         return true;
@@ -39,9 +39,7 @@ exports.tripRules = [
 
 // Stop Rules
 exports.stopRules = [
-    body('city_name').trim().notEmpty().withMessage('City name is required').isLength({ max: 200 }),
-    body('country').trim().notEmpty().withMessage('Country is required').isLength({ max: 100 }),
-    body('day_number').isInt({ min: 1 }).withMessage('Day number must be a positive integer'),
+    body('stop_name').trim().notEmpty().withMessage('Stop name is required').isLength({ max: 200 }),
     body('arrival_date').isISO8601().withMessage('Valid arrival date is required'),
     body('departure_date').isISO8601().withMessage('Valid departure date is required').custom((value, { req }) => {
         const arrival = new Date(req.body.arrival_date);
@@ -69,4 +67,11 @@ exports.activityRules = [
         }
         return true;
     }),
+];
+
+// Expense Rules
+exports.expenseRules = [
+    body('description').trim().notEmpty().withMessage('Expense description is required').isLength({ max: 200 }),
+    body('amount').isFloat({ min: 0 }).withMessage('Amount must be a positive number'),
+    body('currency').optional().isIn(['INR', 'USD', 'EUR', 'GBP']).withMessage('Invalid currency'),
 ];

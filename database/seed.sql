@@ -28,10 +28,10 @@ INSERT INTO trips (user_id, title, description, start_date, end_date, status) VA
 (1, 'Rajasthan Heritage Tour', 'Exploring the royal palaces, forts, and vibrant culture of Rajasthan across 3 iconic cities.', '2026-09-15', '2026-09-22', 'planned');
 
 -- Stops for Trip 1 (id = 1)
-INSERT INTO stops (trip_id, city_name, country, day_number, sort_order, arrival_date, departure_date) VALUES
-(1, 'Jaipur', 'India', 1, 1, '2026-09-15', '2026-09-17'),
-(1, 'Jodhpur', 'India', 3, 2, '2026-09-17', '2026-09-19'),
-(1, 'Udaipur', 'India', 5, 3, '2026-09-19', '2026-09-22');
+INSERT INTO stops (trip_id, stop_name, sort_order, arrival_date, departure_date) VALUES
+(1, 'Jaipur', 1, '2026-09-15', '2026-09-17'),
+(1, 'Jodhpur', 2, '2026-09-17', '2026-09-19'),
+(1, 'Udaipur', 3, '2026-09-19', '2026-09-22');
 
 -- Activities for Jaipur (stop_id = 1)
 INSERT INTO activities (stop_id, title, description, category, start_time, end_time, sort_order) VALUES
@@ -83,11 +83,11 @@ INSERT INTO trips (user_id, title, description, start_date, end_date, status) VA
 (1, 'Europe Backpacking 2026', 'Budget-friendly backpacking adventure across Western Europe — 4 countries in 15 days.', '2026-12-01', '2026-12-15', 'draft');
 
 -- Stops for Trip 2 (id = 2)
-INSERT INTO stops (trip_id, city_name, country, day_number, sort_order, arrival_date, departure_date) VALUES
-(2, 'Paris', 'France', 1, 1, '2026-12-01', '2026-12-05'),
-(2, 'Amsterdam', 'Netherlands', 5, 2, '2026-12-05', '2026-12-08'),
-(2, 'Berlin', 'Germany', 8, 3, '2026-12-08', '2026-12-12'),
-(2, 'Prague', 'Czech Republic', 12, 4, '2026-12-12', '2026-12-15');
+INSERT INTO stops (trip_id, stop_name, sort_order, arrival_date, departure_date) VALUES
+(2, 'Paris', 1, '2026-12-01', '2026-12-04'),
+(2, 'Amsterdam', 2, '2026-12-05', '2026-12-08'),
+(2, 'Berlin', 3, '2026-12-09', '2026-12-12'),
+(2, 'Prague', 4, '2026-12-12', '2026-12-15');
 
 -- Activities for Paris (stop_id = 4)
 INSERT INTO activities (stop_id, title, description, category, start_time, end_time, sort_order) VALUES
@@ -145,10 +145,10 @@ INSERT INTO trips (user_id, title, description, start_date, end_date, status) VA
 (2, 'Kerala Backwaters Escape', 'A relaxing trip through the serene backwaters, spice plantations, and beaches of Kerala.', '2026-10-10', '2026-10-16', 'planned');
 
 -- Stops for Trip 3 (id = 3)
-INSERT INTO stops (trip_id, city_name, country, day_number, sort_order, arrival_date, departure_date) VALUES
-(3, 'Kochi', 'India', 1, 1, '2026-10-10', '2026-10-12'),
-(3, 'Munnar', 'India', 3, 2, '2026-10-12', '2026-10-14'),
-(3, 'Alleppey', 'India', 5, 3, '2026-10-14', '2026-10-16');
+INSERT INTO stops (trip_id, stop_name, sort_order, arrival_date, departure_date) VALUES
+(3, 'Kochi', 1, '2026-10-10', '2026-10-12'),
+(3, 'Munnar', 2, '2026-10-12', '2026-10-14'),
+(3, 'Alleppey', 3, '2026-10-14', '2026-10-16');
 
 -- Activities for Kochi (stop_id = 8)
 INSERT INTO activities (stop_id, title, description, category, start_time, end_time, sort_order) VALUES

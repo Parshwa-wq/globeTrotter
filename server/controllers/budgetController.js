@@ -22,14 +22,13 @@ exports.getTripBudget = async (req, res) => {
 
         // Get budget breakdown by stop
         const [byStop] = await db.query(
-            `SELECT s.id AS stop_id, s.city_name, s.country, 
-                    COALESCE(SUM(e.amount), 0) AS total
+            `SELECT s.id AS stop_id, s.stop_name, COALESCE(SUM(e.amount), 0) AS total
              FROM stops s
-             LEFT JOIN activities a ON a.stop_id = s.id
-             LEFT JOIN expenses e ON e.activity_id = a.id
+             LEFT JOIN activities a ON s.id = a.stop_id
+             LEFT JOIN expenses e ON a.id = e.activity_id
              WHERE s.trip_id = ?
-             GROUP BY s.id, s.city_name, s.country
-             ORDER BY s.sort_order, s.day_number`,
+             GROUP BY s.id
+             ORDER BY s.arrival_date, s.sort_order`,
             [req.params.tripId]
         );
 
@@ -37,7 +36,7 @@ exports.getTripBudget = async (req, res) => {
         const byStopDetailed = await Promise.all(
             byStop.map(async (stop) => {
                 const [expenses] = await db.query(
-                    `SELECT e.id, e.description, e.amount, e.currency, a.title AS activity_title
+                    `SELECT e.id, e.description, e.amount, e.currency, a.title AS activity_title, a.id AS activity_id
                      FROM expenses e
                      JOIN activities a ON e.activity_id = a.id
                      WHERE a.stop_id = ?

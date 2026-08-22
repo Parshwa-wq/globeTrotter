@@ -127,7 +127,7 @@ export default function CreateTripPage() {
                     required
                     value={formData.end_date}
                     onChange={handleChange}
-                    min={formData.start_date}
+                    min={formData.start_date || new Date().toISOString().split('T')[0]}
                     className="w-full bg-[#111] border border-[#222] focus:border-neon-green rounded-xl py-2.5 pl-11 pr-4 text-white focus:outline-none focus:ring-1 focus:ring-neon-green transition-all [color-scheme:dark]"
                   />
                 </div>

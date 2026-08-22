@@ -74,7 +74,7 @@ exports.getSharedTrip = async (req, res) => {
 
         // Get stops
         const [stops] = await db.query(
-            'SELECT * FROM stops WHERE trip_id = ? ORDER BY sort_order, day_number',
+            'SELECT * FROM stops WHERE trip_id = ? ORDER BY arrival_date, sort_order',
             [tripId]
         );
 
@@ -138,8 +138,8 @@ exports.cloneTrip = async (req, res) => {
 
         for (const stop of originalStops) {
             const [stopResult] = await db.query(
-                'INSERT INTO stops (trip_id, city_name, country, day_number, sort_order, arrival_date, departure_date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [newTripId, stop.city_name, stop.country, stop.day_number, stop.sort_order, stop.arrival_date, stop.departure_date]
+                'INSERT INTO stops (trip_id, stop_name, sort_order, arrival_date, departure_date) VALUES (?, ?, ?, ?, ?)',
+                [newTripId, stop.stop_name, stop.sort_order, stop.arrival_date, stop.departure_date]
             );
             const newStopId = stopResult.insertId;
 

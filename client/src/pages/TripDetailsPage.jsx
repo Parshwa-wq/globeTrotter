@@ -79,6 +79,10 @@ export default function TripDetailsPage() {
               </span>
             </div>
           )}
+
+          <Link to={`/trips/${trip.id}/budget`} className="ml-auto font-mono text-xs uppercase tracking-widest text-black bg-neon-green hover:bg-neon-green/90 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(57,255,20,0.2)]">
+            Open Budget <ArrowLeft className="w-3 h-3 rotate-180" />
+          </Link>
         </div>
         
         {trip.description && (
@@ -89,7 +93,7 @@ export default function TripDetailsPage() {
       </header>
 
       {/* Workspace Area for Stops & Activities */}
-      <ItineraryWorkspace tripId={trip.id} tripStartDate={trip.start_date} tripEndDate={trip.end_date} />
+      <ItineraryWorkspace tripId={trip.id} tripStartDate={trip.start_date} tripEndDate={trip.end_date} tripStatus={trip.status} />
     </div>
   );
 }

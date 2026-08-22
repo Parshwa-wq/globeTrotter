@@ -20,7 +20,7 @@ const CATEGORY_COLORS = {
   other: 'text-white/70 border-white/30 bg-white/10',
 };
 
-export default function StopActivities({ stopId, onClose }) {
+export default function StopActivities({ stopId, onClose, isReadOnly }) {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -34,6 +34,14 @@ export default function StopActivities({ stopId, onClose }) {
     category: 'sightseeing',
     start_time: '',
     end_time: ''
+  });
+
+  // Expense states
+  const [addingExpenseFor, setAddingExpenseFor] = useState(null);
+  const [expenseData, setExpenseData] = useState({
+    description: '',
+    amount: '',
+    currency: 'USD'
   });
 
   const fetchActivities = async () => {
@@ -90,6 +98,31 @@ export default function StopActivities({ stopId, onClose }) {
     } catch (err) {
       console.error('Error adding activity:', err);
       alert('Failed to add activity.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleAddExpense = async (e, activityId) => {
+    e.preventDefault();
+    if (!expenseData.amount || expenseData.amount <= 0) {
+      alert("Please enter a valid amount.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await api.post(`/activities/${activityId}/expenses`, {
+        ...expenseData,
+        amount: parseFloat(expenseData.amount)
+      });
+      // Added successfully!
+      alert("Expense logged successfully! View it in the Budget Dashboard.");
+      setAddingExpenseFor(null);
+      setExpenseData({ description: '', amount: '', currency: 'USD' });
+    } catch (err) {
+      console.error('Error adding expense:', err);
+      alert('Failed to log expense. ' + (err.response?.data?.message || ''));
     } finally {
       setSubmitting(false);
     }
@@ -188,6 +221,65 @@ export default function StopActivities({ stopId, onClose }) {
                 )}
                 {act.description && (
                   <p className="text-xs text-white/60 font-inter mt-1.5">{act.description}</p>
+                )}
+                
+                {/* Add Expense Toggle */}
+                {!isReadOnly && (
+                  <div className="mt-3 pt-3 border-t border-[#222]">
+                     <button 
+                       onClick={() => {
+                         setAddingExpenseFor(addingExpenseFor === act.id ? null : act.id);
+                         setExpenseData({ description: '', amount: '', currency: 'USD' });
+                       }}
+                       className="text-[10px] font-mono uppercase tracking-widest text-neon-orange hover:text-white transition-colors"
+                     >
+                       {addingExpenseFor === act.id ? 'Cancel' : '+ Log Expense'}
+                     </button>
+                     
+                     <AnimatePresence>
+                       {addingExpenseFor === act.id && (
+                         <motion.form 
+                           initial={{ opacity: 0, height: 0 }}
+                           animate={{ opacity: 1, height: 'auto' }}
+                           exit={{ opacity: 0, height: 0 }}
+                           onSubmit={(e) => handleAddExpense(e, act.id)}
+                           className="mt-3 flex flex-wrap gap-2 overflow-hidden"
+                         >
+                           <input 
+                             type="text" 
+                             required
+                             value={expenseData.description}
+                             onChange={(e) => setExpenseData({...expenseData, description: e.target.value})}
+                             placeholder="What was this for?" 
+                             className="flex-1 min-w-[120px] bg-[#111] border border-[#333] focus:border-neon-orange rounded-md py-1.5 px-2 text-white text-[10px] font-mono focus:outline-none" 
+                           />
+                           <input 
+                             type="number" 
+                             required
+                             min="0"
+                             step="0.01"
+                             value={expenseData.amount}
+                             onChange={(e) => setExpenseData({...expenseData, amount: e.target.value})}
+                             placeholder="Amount" 
+                             className="w-20 bg-[#111] border border-[#333] focus:border-neon-orange rounded-md py-1.5 px-2 text-white text-[10px] font-mono focus:outline-none" 
+                           />
+                           <select 
+                             value={expenseData.currency}
+                             onChange={(e) => setExpenseData({...expenseData, currency: e.target.value})}
+                             className="bg-[#111] border border-[#333] focus:border-neon-orange rounded-md py-1.5 px-2 text-white text-[10px] font-mono focus:outline-none"
+                           >
+                             <option value="INR">INR</option>
+                             <option value="USD">USD</option>
+                             <option value="EUR">EUR</option>
+                             <option value="GBP">GBP</option>
+                           </select>
+                           <button type="submit" disabled={submitting} className="bg-neon-orange text-black font-bold font-mono text-[10px] uppercase px-3 rounded-md hover:bg-neon-orange/90 disabled:opacity-50">
+                             Save
+                           </button>
+                         </motion.form>
+                       )}
+                     </AnimatePresence>
+                  </div>
                 )}
               </div>
             </div>

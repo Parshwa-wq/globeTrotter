@@ -11,7 +11,7 @@ exports.getStopsForTrip = async (req, res) => {
         }
 
         const [stops] = await db.query(
-            'SELECT * FROM stops WHERE trip_id = ? ORDER BY sort_order, day_number',
+            'SELECT * FROM stops WHERE trip_id = ? ORDER BY arrival_date, sort_order',
             [req.params.tripId]
         );
         res.json({ success: true, count: stops.length, data: stops });
@@ -25,7 +25,7 @@ exports.getStopsForTrip = async (req, res) => {
 // @desc    Add a new stop to a trip
 exports.addStop = async (req, res) => {
     try {
-        const { city_name, country, day_number, sort_order, arrival_date, departure_date } = req.body;
+        const { stop_name, sort_order, arrival_date, departure_date } = req.body;
 
         // Verify trip ownership
         const [trips] = await db.query('SELECT id FROM trips WHERE id = ? AND user_id = ?', [req.params.tripId, req.user.userId]);
@@ -34,8 +34,8 @@ exports.addStop = async (req, res) => {
         }
 
         const [result] = await db.query(
-            'INSERT INTO stops (trip_id, city_name, country, day_number, sort_order, arrival_date, departure_date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [req.params.tripId, city_name, country, day_number, sort_order || 0, arrival_date, departure_date]
+            'INSERT INTO stops (trip_id, stop_name, sort_order, arrival_date, departure_date) VALUES (?, ?, ?, ?, ?)',
+            [req.params.tripId, stop_name, sort_order || 0, arrival_date, departure_date]
         );
 
         const [newStop] = await db.query('SELECT * FROM stops WHERE id = ?', [result.insertId]);
@@ -50,7 +50,7 @@ exports.addStop = async (req, res) => {
 // @desc    Update a stop
 exports.updateStop = async (req, res) => {
     try {
-        const { city_name, country, day_number, sort_order, arrival_date, departure_date } = req.body;
+        const { stop_name, sort_order, arrival_date, departure_date } = req.body;
 
         // Verify trip ownership
         const [trips] = await db.query('SELECT id FROM trips WHERE id = ? AND user_id = ?', [req.params.tripId, req.user.userId]);
@@ -65,11 +65,11 @@ exports.updateStop = async (req, res) => {
         }
 
         await db.query(
-            `UPDATE stops SET city_name = COALESCE(?, city_name), country = COALESCE(?, country),
-             day_number = COALESCE(?, day_number), sort_order = COALESCE(?, sort_order),
+            `UPDATE stops SET stop_name = COALESCE(?, stop_name),
+             sort_order = COALESCE(?, sort_order),
              arrival_date = COALESCE(?, arrival_date), departure_date = COALESCE(?, departure_date)
              WHERE id = ? AND trip_id = ?`,
-            [city_name, country, day_number, sort_order, arrival_date, departure_date, req.params.id, req.params.tripId]
+            [stop_name, sort_order, arrival_date, departure_date, req.params.id, req.params.tripId]
         );
 
         const [updated] = await db.query('SELECT * FROM stops WHERE id = ?', [req.params.id]);

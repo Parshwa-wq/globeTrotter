@@ -1,17 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Plus, Calendar, Clock, Map, MoreVertical, Loader2, X, Navigation } from 'lucide-react';
+import { MapPin, Plus, Calendar, Clock, Map, MoreVertical, Loader2, X, Navigation, Trash2 } from 'lucide-react';
 import api from '../services/api';
 import { Skeleton } from './Skeleton';
 import StopActivities from './StopActivities';
 
-export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate }) {
+export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate, tripStatus }) {
   const [stops, setStops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isAddingStop, setIsAddingStop] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [expandedStops, setExpandedStops] = useState([]);
+  
+  const isReadOnly = tripStatus === 'completed';
+
+  const formatInputDate = (isoString) => {
+    if (!isoString) return '';
+    return new Date(isoString).toISOString().split('T')[0];
+  };
+
+  const minDate = formatInputDate(tripStartDate);
+  const maxDate = formatInputDate(tripEndDate);
 
   const toggleStopExpansion = (id) => {
     setExpandedStops(prev => 
@@ -21,23 +31,15 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate 
 
   // Form state
   const [formData, setFormData] = useState({
-    city_name: '',
-    country: '',
-    day_number: 1,
-    arrival_date: tripStartDate || '',
-    departure_date: tripEndDate || ''
+    stop_name: '',
+    arrival_date: minDate,
+    departure_date: maxDate
   });
 
   const fetchStops = async () => {
     try {
       const response = await api.get(`/trips/${tripId}/stops`);
       setStops(response.data.data || []);
-      
-      // Auto-set the next day number for the form
-      if (response.data.data && response.data.data.length > 0) {
-        const maxDay = Math.max(...response.data.data.map(s => s.day_number));
-        setFormData(prev => ({ ...prev, day_number: maxDay + 1 }));
-      }
     } catch (err) {
       console.error('Failed to fetch stops:', err);
       setError('Could not load itinerary stops.');
@@ -62,12 +64,23 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate 
       await fetchStops();
       setIsAddingStop(false);
       // Reset form (keep dates if possible)
-      setFormData(prev => ({ ...prev, city_name: '', country: '', day_number: prev.day_number + 1 }));
+      setFormData(prev => ({ ...prev, stop_name: '' }));
     } catch (err) {
       console.error('Failed to add stop:', err);
       alert('Failed to add stop. Check dates and try again.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDeleteStop = async (id) => {
+    if (!window.confirm("Are you sure you want to completely delete this stop and all its activities?")) return;
+    try {
+      await api.delete(`/trips/${tripId}/stops/${id}`);
+      await fetchStops();
+    } catch (err) {
+      console.error('Failed to delete stop:', err);
+      alert('Failed to delete stop.');
     }
   };
 
@@ -93,7 +106,7 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate 
           </p>
         </div>
         
-        {!isAddingStop && (
+        {!isAddingStop && !isReadOnly && (
           <button 
             onClick={() => setIsAddingStop(true)}
             className="flex items-center gap-2 px-4 py-2 bg-[#111] border border-[#333] hover:border-neon-green text-white hover:text-neon-green rounded-lg transition-colors font-mono text-xs uppercase tracking-widest"
@@ -121,29 +134,18 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate 
               </div>
               
               <form onSubmit={handleAddStop} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-white/50 ml-1">City Name</label>
-                    <input type="text" name="city_name" required value={formData.city_name} onChange={handleInputChange} placeholder="e.g. Paris" className="w-full bg-[#111] border border-[#222] focus:border-neon-green rounded-lg py-2 px-3 text-white focus:outline-none transition-all text-sm" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-white/50 ml-1">Country</label>
-                    <input type="text" name="country" required value={formData.country} onChange={handleInputChange} placeholder="e.g. France" className="w-full bg-[#111] border border-[#222] focus:border-neon-green rounded-lg py-2 px-3 text-white focus:outline-none transition-all text-sm" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-white/50 ml-1">Day #</label>
-                    <input type="number" min="1" name="day_number" required value={formData.day_number} onChange={handleInputChange} className="w-full bg-[#111] border border-[#222] focus:border-neon-green rounded-lg py-2 px-3 text-white focus:outline-none transition-all text-sm" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1.5 md:col-span-1">
+                    <label className="text-[10px] font-mono uppercase tracking-widest text-white/50 ml-1">Stop Name</label>
+                    <input type="text" name="stop_name" required value={formData.stop_name} onChange={handleInputChange} placeholder="e.g. Paris or Eiffel Tower" className="w-full bg-[#111] border border-[#222] focus:border-neon-green rounded-lg py-2 px-3 text-white focus:outline-none transition-all text-sm" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-mono uppercase tracking-widest text-white/50 ml-1">Arrival Date</label>
-                    <input type="date" name="arrival_date" required value={formData.arrival_date} onChange={handleInputChange} className="w-full bg-[#111] border border-[#222] focus:border-neon-green rounded-lg py-2 px-3 text-white focus:outline-none transition-all text-sm [color-scheme:dark]" />
+                    <input type="date" name="arrival_date" required min={minDate} max={maxDate} value={formData.arrival_date} onChange={handleInputChange} className="w-full bg-[#111] border border-[#222] focus:border-neon-green rounded-lg py-2 px-3 text-white focus:outline-none transition-all text-sm [color-scheme:dark]" />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-mono uppercase tracking-widest text-white/50 ml-1">Departure Date</label>
-                    <input type="date" name="departure_date" required value={formData.departure_date} onChange={handleInputChange} className="w-full bg-[#111] border border-[#222] focus:border-neon-green rounded-lg py-2 px-3 text-white focus:outline-none transition-all text-sm [color-scheme:dark]" />
+                    <input type="date" name="departure_date" required min={formData.arrival_date || minDate} max={maxDate} value={formData.departure_date} onChange={handleInputChange} className="w-full bg-[#111] border border-[#222] focus:border-neon-green rounded-lg py-2 px-3 text-white focus:outline-none transition-all text-sm [color-scheme:dark]" />
                   </div>
                 </div>
 
@@ -191,11 +193,10 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate 
               {/* Card */}
               <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-5 bento-card hover:border-white/20 transition-colors relative">
                 <div className="absolute top-0 right-0 p-4">
-                   <span className="font-mono text-[10px] text-neon-green border border-neon-green/30 bg-neon-green/10 px-2 py-1 rounded">DAY {stop.day_number}</span>
+                   <span className="font-mono text-[10px] text-neon-green border border-neon-green/30 bg-neon-green/10 px-2 py-1 rounded">STOP {index + 1}</span>
                 </div>
                 
-                <h3 className="font-grotesk text-xl font-bold mb-1 group-hover:text-neon-green transition-colors">{stop.city_name}</h3>
-                <p className="text-sm text-[#888] font-inter mb-4">{stop.country}</p>
+                <h3 className="font-grotesk text-xl font-bold mb-4 group-hover:text-neon-green transition-colors">{stop.stop_name}</h3>
                 
                 <div className="flex items-center gap-4 text-xs font-mono text-white/50">
                   <div className="flex items-center gap-1">
@@ -209,21 +210,27 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate 
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-[#222] flex justify-between items-center">
+                 <div className="mt-4 pt-4 border-t border-[#222] flex justify-between items-center">
                    <button 
                      onClick={() => toggleStopExpansion(stop.id)}
                      className="text-[10px] font-mono uppercase tracking-widest text-neon-green hover:text-white transition-colors flex items-center gap-2"
                    >
                      {expandedStops.includes(stop.id) ? 'Close Activities' : 'Manage Activities'}
                    </button>
-                   <button className="text-white/30 hover:text-white transition-colors">
-                     <MoreVertical className="w-4 h-4" />
-                   </button>
-                </div>
+                   {!isReadOnly && (
+                     <button 
+                       onClick={() => handleDeleteStop(stop.id)}
+                       className="text-white/30 hover:text-red-500 transition-colors"
+                       title="Delete Stop"
+                     >
+                       <Trash2 className="w-4 h-4" />
+                     </button>
+                   )}
+                 </div>
 
                 <AnimatePresence>
                   {expandedStops.includes(stop.id) && (
-                    <StopActivities stopId={stop.id} onClose={() => toggleStopExpansion(stop.id)} />
+                    <StopActivities stopId={stop.id} onClose={() => toggleStopExpansion(stop.id)} isReadOnly={isReadOnly} />
                   )}
                 </AnimatePresence>
               </div>

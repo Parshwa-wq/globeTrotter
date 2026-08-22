@@ -12,6 +12,7 @@ import DashboardPage from './pages/DashboardPage';
 import TripsPage from './pages/TripsPage';
 import CreateTripPage from './pages/CreateTripPage';
 import TripDetailsPage from './pages/TripDetailsPage';
+import TripBudgetPage from './pages/TripBudgetPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
         <Route path="/trips" element={<TripsPage />} />
         <Route path="/trips/new" element={<CreateTripPage />} />
         <Route path="/trips/:id" element={<TripDetailsPage />} />
+        <Route path="/trips/:id/budget" element={<TripBudgetPage />} />
       </Route>
 
       {/* 404 Route */}
