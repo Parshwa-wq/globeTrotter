@@ -7,6 +7,7 @@ import { Skeleton } from '../components/Skeleton';
 import { getPreferredCurrency, formatCurrency, convertCurrency } from '../utils/currency';
 import { useToast } from '../context/ToastContext';
 import ConfirmModal from '../components/ConfirmModal';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 export default function TripBudgetPage() {
   const { id } = useParams();
@@ -181,6 +182,53 @@ export default function TripBudgetPage() {
            <p className="text-[10px] text-white/40 mt-1 font-inter text-center max-w-[150px]">Attach directly to itinerary activities</p>
         </div>
       </div>
+
+      {/* Budget Analytics */}
+      {trueTotal > 0 && (
+        <div className="bento-card border border-[#222] p-6 mb-8 bg-[#0a0a0a]">
+          <h2 className="font-mono text-sm uppercase tracking-widest text-white/70 font-semibold mb-6 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-neon-cyan" /> Spending Distribution
+          </h2>
+          <div className="h-[280px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={normalizedStops.filter(s => s.normalizedTotal > 0).map(s => ({ name: s.stop_name, value: s.normalizedTotal }))}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={70}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {normalizedStops.filter(s => s.normalizedTotal > 0).map((entry, index) => {
+                    const COLORS = ['#39FF14', '#00F0FF', '#FF6600', '#8B5CF6', '#EC4899'];
+                    return <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />;
+                  })}
+                </Pie>
+                <Tooltip 
+                  formatter={(value) => formatCurrency(value, prefCurrency)}
+                  contentStyle={{ backgroundColor: '#111', border: '1px solid #333', borderRadius: '12px' }}
+                  itemStyle={{ color: '#fff', fontFamily: 'monospace' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          {/* Custom Legend */}
+          <div className="flex flex-wrap justify-center gap-6 mt-4">
+            {normalizedStops.filter(s => s.normalizedTotal > 0).map((entry, index) => {
+              const COLORS = ['#39FF14', '#00F0FF', '#FF6600', '#8B5CF6', '#EC4899'];
+              return (
+                <div key={entry.stop_name} className="flex items-center gap-2 font-mono text-xs text-white/70">
+                  <div className="w-3 h-3 rounded-full shadow-lg" style={{ backgroundColor: COLORS[index % COLORS.length], boxShadow: `0 0 10px ${COLORS[index % COLORS.length]}40` }}></div>
+                  {entry.stop_name}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Expenses by Stop */}
       <h2 className="font-mono text-sm uppercase tracking-widest text-white/70 font-semibold mb-6 flex items-center gap-2">

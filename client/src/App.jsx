@@ -48,8 +48,10 @@ function App() {
         <Route path="/trips/:id" element={<TripDetailsPage />} />
         <Route path="/trips/:id/budget" element={<TripBudgetPage />} />
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/admin" element={<AdminPage />} />
       </Route>
+
+      {/* Exclusive Full-Screen Admin Console */}
+      <Route path="/admin" element={<AdminPage />} />
 
       {/* 404 Route */}
       <Route path="*" element={<NotFoundPage />} />

@@ -31,7 +31,11 @@ export default function AuthForm({ initialMode = "login" }) {
 
       if (result.success) {
         addToast(`Welcome back${isLogin ? '' : ', ' + name}!`, 'success');
-        navigate("/dashboard");
+        if (result.user && result.user.role === 'admin') {
+          navigate("/admin");
+        } else {
+          navigate("/dashboard");
+        }
       } else {
         addToast(result.message || "Authentication failed", 'error');
         setIsProcessing(false);

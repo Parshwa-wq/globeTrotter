@@ -1,15 +1,21 @@
 import React from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { PillNavbar } from '../components/PillNavbar';
 import { TopographicBackground } from '../components/TopographicBackground';
 
 export default function MainLayout() {
   const { user } = useAuth();
+  const location = useLocation();
 
   // Protect routes - if no user, redirect to login
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Force Admins to the Admin Terminal or Settings ONLY
+  if (user.role === 'admin' && location.pathname !== '/settings') {
+    return <Navigate to="/admin" replace />;
   }
 
   return (

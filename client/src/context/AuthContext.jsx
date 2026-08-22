@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('globetrotter_token', token);
         localStorage.setItem('globetrotter_user', JSON.stringify(user));
         setUser(user);
-        return { success: true };
+        return { success: true, user };
       }
       return { success: false, message: response.data.message };
     } catch (error) {

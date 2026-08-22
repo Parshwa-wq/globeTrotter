@@ -24,7 +24,20 @@ exports.getStats = async (req, res) => {
 
 exports.getUsers = async (req, res) => {
     try {
-        const [users] = await db.query('SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC');
+        const query = `
+            SELECT 
+                u.id, u.name, u.email, u.role, u.created_at,
+                (SELECT COUNT(*) FROM trips WHERE user_id = u.id) as trip_count,
+                (SELECT COALESCE(SUM(e.amount), 0) 
+                 FROM expenses e 
+                 JOIN activities a ON e.activity_id = a.id
+                 JOIN stops s ON a.stop_id = s.id
+                 JOIN trips t ON s.trip_id = t.id
+                 WHERE t.user_id = u.id) as total_spent
+            FROM users u
+            ORDER BY u.created_at DESC
+        `;
+        const [users] = await db.query(query);
         res.json({ success: true, data: users });
     } catch (error) {
         console.error('Admin Users Error:', error);

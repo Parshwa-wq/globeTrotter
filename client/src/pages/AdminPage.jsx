@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, LayoutDashboard, MapPin, Activity, Trash2, ArrowLeft, Loader2, ShieldAlert, Shield, ShieldMinus } from 'lucide-react';
+import { Users, LayoutDashboard, MapPin, Activity, Trash2, ArrowLeft, Loader2, ShieldAlert, Shield, ShieldMinus, Terminal } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -72,31 +72,40 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 text-neon-green animate-spin" />
+      <div className="flex items-center justify-center min-h-screen bg-[#050505]">
+        <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="w-full pb-12">
-      <Link to="/dashboard" className="inline-flex items-center gap-2 text-neon-green mb-8 font-mono text-sm hover:underline">
-        <ArrowLeft className="w-4 h-4" /> Return to Dashboard
-      </Link>
-
-      <header className="mb-12 border-l-2 border-red-500 pl-6">
-        <div className="flex items-center gap-3 mb-4">
-          <ShieldAlert className="w-8 h-8 text-red-500" />
-          <h1 className="font-grotesk text-4xl md:text-5xl font-bold tracking-tight text-white">
-            Admin Console
-          </h1>
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-red-500/30 flex flex-col font-inter">
+      {/* Top Navbar */}
+      <nav className="h-16 border-b border-[#222] bg-[#0a0a0a] flex items-center justify-between px-6 sticky top-0 z-50">
+        <div className="flex items-center gap-4">
+          <Terminal className="w-5 h-5 text-red-500" />
+          <span className="font-mono text-sm font-bold tracking-widest uppercase text-white/90">GT // Admin_Terminal</span>
         </div>
-        <p className="text-[#888] font-mono text-sm uppercase tracking-widest">
-          Platform-Wide Tactical Overview
-        </p>
-      </header>
+        <Link to="/settings" className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-white/50 hover:text-white transition-colors bg-[#111] px-4 py-2 rounded-md border border-[#333] hover:border-white/20">
+          <ArrowLeft className="w-4 h-4" /> Settings
+        </Link>
+      </nav>
 
-      {/* Stats Grid */}
+      {/* Main Content Area */}
+      <div className="flex-1 p-6 md:p-10 max-w-[1600px] mx-auto w-full">
+        <header className="mb-12 border-l-2 border-red-500 pl-6">
+          <div className="flex items-center gap-3 mb-4">
+            <ShieldAlert className="w-8 h-8 text-red-500" />
+            <h1 className="font-grotesk text-4xl md:text-5xl font-bold tracking-tight text-white">
+              System Control
+            </h1>
+          </div>
+          <p className="text-[#888] font-mono text-sm uppercase tracking-widest">
+            Platform-Wide Tactical Overview & Operative Management
+          </p>
+        </header>
+
+        {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
         <div className="bento-inner-block bg-[#0a0a0a] shadow-lg border-t-2 border-neon-cyan">
           <div className="flex items-center gap-2 text-white/50 mb-2">
@@ -141,6 +150,7 @@ export default function AdminPage() {
               <tr className="border-b border-[#333]">
                 <th className="py-3 px-4 text-xs font-mono uppercase tracking-widest text-white/50">ID</th>
                 <th className="py-3 px-4 text-xs font-mono uppercase tracking-widest text-white/50">Operative Name</th>
+                <th className="py-3 px-4 text-xs font-mono uppercase tracking-widest text-white/50">Operative Stats</th>
                 <th className="py-3 px-4 text-xs font-mono uppercase tracking-widest text-white/50">Clearance Level</th>
                 <th className="py-3 px-4 text-xs font-mono uppercase tracking-widest text-white/50 text-right">Actions</th>
               </tr>
@@ -152,6 +162,18 @@ export default function AdminPage() {
                   <td className="py-4 px-4">
                     <div className="font-bold text-white text-sm">{u.name}</div>
                     <div className="text-xs text-white/50 font-mono">{u.email}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="flex items-center gap-4">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] text-white/40 font-mono uppercase tracking-widest">Trips</span>
+                        <span className="text-sm font-bold text-white">{u.trip_count || 0}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] text-white/40 font-mono uppercase tracking-widest">Vol. Logged</span>
+                        <span className="text-sm font-bold text-neon-green">{u.total_spent || 0}</span>
+                      </div>
+                    </div>
                   </td>
                   <td className="py-4 px-4">
                     <span className={`px-2 py-1 text-[10px] uppercase font-mono tracking-widest rounded-full border ${u.role === 'admin' ? 'border-red-500/30 text-red-500 bg-red-500/10' : 'border-neon-cyan/30 text-neon-cyan bg-neon-cyan/10'}`}>
@@ -203,6 +225,7 @@ export default function AdminPage() {
         message="This action is irreversible. It will permanently delete this user, all their trips, activities, and logged expenses."
         isProcessing={deleting}
       />
+      </div>
     </div>
   );
 }
