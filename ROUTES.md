@@ -1,102 +1,68 @@
-# GlobalTrotters - Routes and Navigation Flow
+# GlobalTrotters - Navigation Plan & Route Architecture
 
-This document maps out the application's pages (routes) and the user's transition flow between them.
+This document provides a highly structured view of the application's routing plan, designed specifically to help map out the frontend architecture (e.g., using React Router). It includes layout groupings, path definitions, and detailed transition flows.
 
-## 1. Authentication
-* **Screen:** Login / Signup Screen
-* **Path:** `/login` or `/signup`
-* **Description:** Entry point for user authentication.
-* **Transitions:**
-  * **Success:** Redirects to `/dashboard` (Dashboard / Home Screen).
-  * **Signup link:** Toggles to the signup view.
-  * **Forgot Password:** Navigates to a password recovery flow.
+## 1. Route Hierarchy
 
-## 2. Core Navigation (Authenticated)
-* **Screen:** Dashboard / Home Screen
-* **Path:** `/dashboard` (or `/` for logged-in users)
-* **Description:** Central hub showing upcoming trips, popular cities, and quick actions.
-* **Transitions:**
-  * **"Plan New Trip":** Navigates to `/trips/create`.
-  * **View All Trips:** Navigates to `/trips` (My Trips).
-  * **Click a recent trip:** Navigates to `/trips/:id` (Itinerary View).
-  * **Profile/Settings avatar:** Navigates to `/profile`.
+### Public Routes (No Authentication Required)
+*(These routes do not require a logged-in user and typically have a minimal layout)*
+* **`/login`** - Login Screen
+* **`/signup`** - Signup Screen
+* **`/share/:shareId`** - Shared/Public Itinerary View Screen
+* **`*` (Catch-all)** - 404 Not Found Screen
 
-## 3. Trip Management
-* **Screen:** My Trips (Trip List) Screen
-* **Path:** `/trips`
-* **Description:** List view of all trips created by the user.
-* **Transitions:**
-  * **"Create Trip":** Navigates to `/trips/create`.
-  * **Click Trip Card (View):** Navigates to `/trips/:id`.
-  * **Click Trip Card (Edit):** Navigates to `/trips/:id/builder`.
+### Protected Core Routes (Authentication Required)
+*(Wrapped in a `MainLayout` containing a global Navbar or Sidebar)*
+* **`/` or `/dashboard`** - Dashboard / Home Screen
+* **`/trips`** - My Trips (Trip List) Screen
+* **`/trips/create`** - Create Trip Screen (Form to initialize a trip)
+* **`/profile`** - User Profile / Settings Screen
 
-* **Screen:** Create Trip Screen
-* **Path:** `/trips/create`
-* **Description:** Form to initialize a new trip (name, dates, cover photo).
-* **Transitions:**
-  * **Save/Submit:** On success, navigates to `/trips/:id/builder` to start adding details.
-  * **Cancel:** Navigates back to `/dashboard` or `/trips`.
+### Trip Details & Views (Authentication Required)
+*(Nested under a `TripLayout` that provides contextual trip tabs/navigation)*
+* **`/trips/:id`** - Itinerary View Screen (Overview/Summary of the trip)
+* **`/trips/:id/budget`** - Trip Budget & Cost Breakdown Screen
+* **`/trips/:id/calendar`** - Trip Calendar / Timeline Screen
 
-## 4. Itinerary Building
-* **Screen:** Itinerary Builder Screen
-* **Path:** `/trips/:id/builder`
-* **Description:** Interactive interface to add cities, dates, and activities.
-* **Transitions:**
-  * **"Add Stop" (City):** Opens City Search Modal or navigates to `/trips/:id/search/city`.
-  * **"Add Activity":** Opens Activity Search Modal or navigates to `/trips/:id/search/activity`.
-  * **"Done/View Trip":** Navigates to `/trips/:id`.
+### Trip Builder Workspace (Authentication Required)
+*(Typically a full-screen layout focused heavily on interaction)*
+* **`/trips/:id/builder`** - Itinerary Builder Screen (Main drag/drop workspace)
+  * **Modal / Nested Route:** `City Search` (e.g., `/trips/:id/builder?modal=citySearch`)
+  * **Modal / Nested Route:** `Activity Search` (e.g., `/trips/:id/builder?modal=activitySearch`)
 
-* **Screen:** City Search
-* **Path:** `/trips/:id/search/city` (Best implemented as a Modal/Drawer over the Builder)
-* **Transitions:**
-  * **"Add to Trip":** Updates the itinerary and closes modal (back to `/trips/:id/builder`).
+### Admin Routes (Admin Role Required)
+*(Wrapped in a dedicated `AdminLayout`)*
+* **`/admin`** - Admin / Analytics Dashboard
 
-* **Screen:** Activity Search
-* **Path:** `/trips/:id/search/activity` (Best implemented as a Modal/Drawer over the Builder)
-* **Transitions:**
-  * **Add Activity:** Updates the itinerary and closes modal (back to `/trips/:id/builder`).
+---
 
-## 5. Trip Views & Analytics
-* **Screen:** Itinerary View Screen
-* **Path:** `/trips/:id`
-* **Description:** The primary read-only/summary view of the created trip.
-* **Transitions:**
-  * **Edit Plan:** Navigates back to `/trips/:id/builder`.
-  * **View Budget:** Navigates to `/trips/:id/budget`.
-  * **View Calendar:** Navigates to `/trips/:id/calendar`.
-  * **Share:** Generates a public link and can navigate to `/share/:shareId`.
+## 2. Key Transition Flows
 
-* **Screen:** Trip Budget & Cost Breakdown Screen
-* **Path:** `/trips/:id/budget`
-* **Description:** Detailed financial breakdown of the trip.
-* **Transitions:**
-  * **Back:** Navigates back to `/trips/:id`.
+### A. The "Create & Build" Flow
+1. User clicks **"Plan New Trip"** on `/dashboard`.
+2. Transitions to **`/trips/create`**.
+3. User enters basic info (Name, Dates, Cover Image) and clicks Save.
+4. System creates trip (generating an `:id`) and transitions to **`/trips/:id/builder`**.
+5. Inside the builder, the user opens the **City Search** and **Activity Search** modals to populate the itinerary.
+6. Once satisfied, user clicks **"View Trip"**, transitioning to **`/trips/:id`**.
 
-* **Screen:** Trip Calendar / Timeline Screen
-* **Path:** `/trips/:id/calendar`
-* **Description:** Calendar or vertical timeline visualization.
-* **Transitions:**
-  * **Back:** Navigates back to `/trips/:id`.
+### B. The "Review & Manage" Flow
+1. User navigates to **`/trips`** to see all their saved trips.
+2. User clicks a trip card, transitioning to **`/trips/:id`**.
+3. From the Trip Overview, the user can toggle between different perspectives:
+   * Click **"Budget"** -> transitions to **`/trips/:id/budget`**.
+   * Click **"Calendar"** -> transitions to **`/trips/:id/calendar`**.
+   * Click **"Edit Plan"** -> transitions to **`/trips/:id/builder`**.
 
-## 6. Public Sharing
-* **Screen:** Shared/Public Itinerary View Screen
-* **Path:** `/share/:shareId`
-* **Description:** Public, read-only view of a trip for unauthenticated or unauthorized users.
-* **Transitions:**
-  * **"Copy Trip":** If logged in, clones the trip and redirects to `/trips/:newId/builder`. If logged out, redirects to `/login`.
+### C. The "Share & Duplicate" Flow
+1. User clicks **"Share"** on **`/trips/:id`**, which generates a public link (e.g., `/share/abc-123`).
+2. A visitor (unauthenticated) visits **`/share/abc-123`** and views the read-only itinerary.
+3. The visitor clicks **"Copy Trip"**:
+   * *If not logged in:* Redirects to **`/login?redirect=/share/abc-123`**.
+   * *If logged in:* Clones the trip to their account and transitions them to **`/trips/:newId/builder`** so they can tweak it themselves.
 
-## 7. User Account
-* **Screen:** User Profile / Settings Screen
-* **Path:** `/profile`
-* **Description:** Manage user preferences, details, and account settings.
-* **Transitions:**
-  * **Save:** Stays on `/profile`.
-  * **Logout:** Clears session and navigates to `/login`.
-  * **Back:** Navigates to `/dashboard`.
-
-## 8. Admin (Optional)
-* **Screen:** Admin / Analytics Dashboard
-* **Path:** `/admin`
-* **Description:** System-wide analytics and management.
-* **Transitions:**
-  * **Back to App:** Navigates to `/dashboard`.
+### D. Authentication Flow
+1. User arrives at **`/login`**.
+2. Upon successful authentication, transitions to **`/dashboard`**.
+3. If they need to reset a password, they navigate to a "Forgot Password" modal/route.
+4. From anywhere in the app, user goes to **`/profile`** -> clicks **"Logout"** -> clears session and redirects to **`/login`**.
