@@ -1,24 +1,31 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { PillNavbar } from '../components/PillNavbar';
+import { TopographicBackground } from '../components/TopographicBackground';
 
 export default function MainLayout() {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--color-bg-primary)' }}>
-      {/* Future Navbar Component */}
-      <header style={{ 
-        borderBottom: '1px solid var(--color-border)', 
-        padding: '16px 24px', 
-        display: 'flex', 
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: 'var(--color-bg-secondary)'
-      }}>
-        <div style={{ color: 'var(--color-neon-green)', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}>GlobeTrotter</div>
-        <div style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>Navigation pending...</div>
-      </header>
+  const { user } = useAuth();
 
-      {/* Main Content Area */}
-      <main style={{ flex: 1, padding: '24px' }}>
+  // Protect routes - if no user, redirect to login
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <div className="relative min-h-[100dvh] bg-[#020202] text-white font-inter selection:bg-neon-green selection:text-black">
+      <PillNavbar />
+      
+      {/* Interactive Topographic Canvas Background */}
+      <TopographicBackground />
+
+      {/* Background ambient glow matching UI kit aesthetic */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-neon-green/5 blur-[150px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-neon-cyan/5 blur-[150px]" />
+      </div>
+
+      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-32">
         <Outlet />
       </main>
     </div>

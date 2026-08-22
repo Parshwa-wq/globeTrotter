@@ -112,8 +112,8 @@ export function TopographicBackground() {
         ctx.closePath();
         
         // ELEGANT STYLING: Uniform, highly visible silver/white lines
-        const depthOpacity = Math.max(0.05, 0.2 - (i / numLines) * 0.15);
-        ctx.lineWidth = 1;
+        const depthOpacity = Math.max(0.08, 0.25 - (i / numLines) * 0.2);
+        ctx.lineWidth = 1.2;
         ctx.strokeStyle = `rgba(255, 255, 255, ${depthOpacity})`;
         ctx.stroke();
       }
