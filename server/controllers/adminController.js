@@ -4,16 +4,27 @@ exports.getStats = async (req, res) => {
     try {
         const [userCount] = await db.query('SELECT COUNT(*) as total FROM users');
         const [tripCount] = await db.query('SELECT COUNT(*) as total FROM trips');
+        
+        // Advanced Trip States
+        const [activeTrips] = await db.query('SELECT COUNT(*) as total FROM trips WHERE end_date >= CURDATE() OR end_date IS NULL');
+        const [concludedTrips] = await db.query('SELECT COUNT(*) as total FROM trips WHERE end_date < CURDATE()');
+        
         const [stopCount] = await db.query('SELECT COUNT(*) as total FROM stops');
         const [expenseCount] = await db.query('SELECT SUM(amount) as total_volume FROM expenses');
+        
+        // Analytics for Charts
+        const [topDestinations] = await db.query('SELECT stop_name as name, COUNT(*) as value FROM stops GROUP BY stop_name ORDER BY value DESC LIMIT 5');
         
         res.json({
             success: true,
             data: {
                 users: userCount[0].total,
                 trips: tripCount[0].total,
+                activeTrips: activeTrips[0].total,
+                concludedTrips: concludedTrips[0].total,
                 stops: stopCount[0].total,
-                totalVolume: expenseCount[0].total_volume || 0
+                totalVolume: expenseCount[0].total_volume || 0,
+                topDestinations
             }
         });
     } catch (error) {

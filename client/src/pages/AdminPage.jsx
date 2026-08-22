@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Users, LayoutDashboard, MapPin, Activity, Trash2, ArrowLeft, Loader2, ShieldAlert, Shield, ShieldMinus, Terminal } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import ConfirmModal from '../components/ConfirmModal';
+import { TopographicBackground } from '../components/TopographicBackground';
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -79,9 +81,10 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-red-500/30 flex flex-col font-inter">
+    <div className="relative min-h-screen bg-transparent text-white selection:bg-red-500/30 flex flex-col font-inter">
+      <TopographicBackground />
       {/* Top Navbar */}
-      <nav className="h-16 border-b border-[#222] bg-[#0a0a0a] flex items-center justify-between px-6 sticky top-0 z-50">
+      <nav className="relative h-16 border-b border-[#222] bg-[#0a0a0a]/80 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-50">
         <div className="flex items-center gap-4">
           <Terminal className="w-5 h-5 text-red-500" />
           <span className="font-mono text-sm font-bold tracking-widest uppercase text-white/90">GT // Admin_Terminal</span>
@@ -92,56 +95,144 @@ export default function AdminPage() {
       </nav>
 
       {/* Main Content Area */}
-      <div className="flex-1 p-6 md:p-10 max-w-[1600px] mx-auto w-full">
+      <div className="relative z-10 flex-1 p-6 md:p-10 max-w-[1600px] mx-auto w-full">
         <header className="mb-12 border-l-2 border-red-500 pl-6">
           <div className="flex items-center gap-3 mb-4">
             <ShieldAlert className="w-8 h-8 text-red-500" />
-            <h1 className="font-grotesk text-4xl md:text-5xl font-bold tracking-tight text-white">
+            <h1 className="font-grotesk text-4xl md:text-5xl font-bold tracking-tight text-white drop-shadow-md">
               System Control
             </h1>
           </div>
-          <p className="text-[#888] font-mono text-sm uppercase tracking-widest">
+          <p className="text-[#888] font-mono text-sm uppercase tracking-widest drop-shadow-sm">
             Platform-Wide Tactical Overview & Operative Management
           </p>
         </header>
 
-        {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-        <div className="bento-inner-block bg-[#0a0a0a] shadow-lg border-t-2 border-neon-cyan">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        <div className="bento-inner-block bg-[#0a0a0a]/70 backdrop-blur-lg shadow-lg border-t-2 border-neon-cyan">
           <div className="flex items-center gap-2 text-white/50 mb-2">
             <Users className="w-4 h-4 text-neon-cyan" />
-            <span className="font-mono text-xs uppercase tracking-widest">Total Users</span>
+            <span className="font-mono text-xs uppercase tracking-widest">Total Operatives</span>
           </div>
           <div className="font-grotesk text-3xl font-bold text-white">{stats?.users || 0}</div>
         </div>
         
-        <div className="bento-inner-block bg-[#0a0a0a] shadow-lg border-t-2 border-neon-green">
+        <div className="bento-inner-block bg-[#0a0a0a]/70 backdrop-blur-lg shadow-lg border-t-2 border-neon-orange">
           <div className="flex items-center gap-2 text-white/50 mb-2">
-            <LayoutDashboard className="w-4 h-4 text-neon-green" />
-            <span className="font-mono text-xs uppercase tracking-widest">Active Trips</span>
+            <LayoutDashboard className="w-4 h-4 text-neon-orange" />
+            <span className="font-mono text-xs uppercase tracking-widest">Total Planned Trips</span>
           </div>
           <div className="font-grotesk text-3xl font-bold text-white">{stats?.trips || 0}</div>
         </div>
 
-        <div className="bento-inner-block bg-[#0a0a0a] shadow-lg border-t-2 border-neon-orange">
+        <div className="bento-inner-block bg-[#0a0a0a]/70 backdrop-blur-lg shadow-lg border-t-2 border-purple-500">
           <div className="flex items-center gap-2 text-white/50 mb-2">
-            <MapPin className="w-4 h-4 text-neon-orange" />
+            <Activity className="w-4 h-4 text-purple-500" />
+            <span className="font-mono text-xs uppercase tracking-widest">Capital Logged</span>
+          </div>
+          <div className="font-grotesk text-3xl font-bold text-white">{stats?.totalVolume || 0}</div>
+        </div>
+
+        <div className="bento-inner-block bg-[#0a0a0a]/70 backdrop-blur-lg shadow-lg border-t-2 border-neon-green">
+          <div className="flex items-center gap-2 text-white/50 mb-2">
+            <Activity className="w-4 h-4 text-neon-green" />
+            <span className="font-mono text-xs uppercase tracking-widest">Active Operations</span>
+          </div>
+          <div className="font-grotesk text-3xl font-bold text-white">{stats?.activeTrips || 0}</div>
+        </div>
+
+        <div className="bento-inner-block bg-[#0a0a0a]/70 backdrop-blur-lg shadow-lg border-t-2 border-[#FF00FF]">
+          <div className="flex items-center gap-2 text-white/50 mb-2">
+            <Trash2 className="w-4 h-4 text-[#FF00FF]" />
+            <span className="font-mono text-xs uppercase tracking-widest">Concluded Missions</span>
+          </div>
+          <div className="font-grotesk text-3xl font-bold text-white">{stats?.concludedTrips || 0}</div>
+        </div>
+
+        <div className="bento-inner-block bg-[#0a0a0a]/70 backdrop-blur-lg shadow-lg border-t-2 border-blue-500">
+          <div className="flex items-center gap-2 text-white/50 mb-2">
+            <MapPin className="w-4 h-4 text-blue-500" />
             <span className="font-mono text-xs uppercase tracking-widest">Stops Deployed</span>
           </div>
           <div className="font-grotesk text-3xl font-bold text-white">{stats?.stops || 0}</div>
         </div>
+      </div>
 
-        <div className="bento-inner-block bg-[#0a0a0a] shadow-lg border-t-2 border-purple-500">
-          <div className="flex items-center gap-2 text-white/50 mb-2">
-            <Activity className="w-4 h-4 text-purple-500" />
-            <span className="font-mono text-xs uppercase tracking-widest">Total Capital Logged</span>
+      {/* Analytics Charts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        {/* Active vs Concluded Trips Pie Chart */}
+        <div className="bento-card bg-[#0a0a0a]/80 backdrop-blur-xl p-6 border border-[#222]">
+          <h2 className="font-mono text-sm uppercase tracking-widest text-white/70 font-semibold mb-6 flex items-center gap-2">
+            <Activity className="w-4 h-4 text-neon-cyan" /> Operations Status
+          </h2>
+          <div className="h-[250px] w-full relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={
+                    (stats?.activeTrips > 0 || stats?.concludedTrips > 0)
+                      ? [
+                          { name: 'Active', value: stats?.activeTrips || 0 },
+                          { name: 'Concluded', value: stats?.concludedTrips || 0 }
+                        ].filter(d => d.value > 0)
+                      : [{ name: 'No Data Available', value: 1 }]
+                  }
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={70}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {(stats?.activeTrips > 0 || stats?.concludedTrips > 0) ? (
+                    <>
+                      <Cell fill="#39FF14" />
+                      <Cell fill="#FF00FF" />
+                    </>
+                  ) : (
+                    <Cell fill="#333333" />
+                  )}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#111', border: '1px solid #333', borderRadius: '8px' }}
+                  itemStyle={{ color: '#fff', fontFamily: 'monospace' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-          <div className="font-grotesk text-3xl font-bold text-white">{stats?.totalVolume || 0}</div>
+          <div className="flex justify-center gap-6 mt-4 font-mono text-xs text-white/70">
+            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#39FF14] rounded-full shadow-[0_0_10px_#39FF1480]"></div>Active</div>
+            <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#FF00FF] rounded-full shadow-[0_0_10px_#FF00FF80]"></div>Concluded</div>
+          </div>
+        </div>
+
+        {/* Top Destinations Bar Chart */}
+        <div className="bento-card bg-[#0a0a0a]/80 backdrop-blur-xl p-6 border border-[#222]">
+          <h2 className="font-mono text-sm uppercase tracking-widest text-white/70 font-semibold mb-6 flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-neon-orange" /> Global Heatmap (Top 5)
+          </h2>
+          <div className="h-[250px] w-full relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={stats?.topDestinations?.length > 0 ? stats.topDestinations : [{ name: 'No Data', value: 0 }]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#222" vertical={false} />
+                <XAxis dataKey="name" stroke="#666" tick={{ fill: '#888', fontSize: 10, fontFamily: 'monospace' }} />
+                <YAxis stroke="#666" tick={{ fill: '#888', fontSize: 10, fontFamily: 'monospace' }} allowDecimals={false} />
+                <Tooltip 
+                  cursor={{ fill: '#222' }}
+                  contentStyle={{ backgroundColor: '#111', border: '1px solid #333', borderRadius: '8px' }}
+                  itemStyle={{ color: '#fff', fontFamily: 'monospace' }}
+                />
+                <Bar dataKey="value" fill="#00F0FF" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
       {/* User Management Table */}
-      <div className="bento-card bg-[#0a0a0a] p-6 border border-[#222]">
+      <div className="bento-card bg-[#0a0a0a]/80 backdrop-blur-xl p-6 border border-[#222]">
         <h2 className="font-grotesk text-xl font-bold text-white mb-6">User Roster</h2>
         
         <div className="overflow-x-auto">
@@ -157,7 +248,7 @@ export default function AdminPage() {
             </thead>
             <tbody>
               {users.map(u => (
-                <tr key={u.id} className="border-b border-[#222] hover:bg-[#111] transition-colors group">
+                <tr key={u.id} className="border-b border-[#222] hover:bg-[#111]/50 transition-colors group">
                   <td className="py-4 px-4 font-mono text-sm text-white/40">{u.id}</td>
                   <td className="py-4 px-4">
                     <div className="font-bold text-white text-sm">{u.name}</div>

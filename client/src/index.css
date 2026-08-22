@@ -83,7 +83,8 @@
   
   /* Double-invert media so photos don't look like x-rays */
   body.light-mode img, 
-  body.light-mode video {
+  body.light-mode video,
+  body.light-mode .recharts-wrapper {
     filter: invert(1) hue-rotate(180deg);
   }
 }
