@@ -26,6 +26,9 @@ app.get('/api/test-db', async (req, res) => {
   }
 });
 
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/trips', require('./routes/tripRoutes'));
+
 // Root Route
 app.get('/', (req, res) => {
   res.send('GlobeTrotter API is running (MySQL Backend) 🚀');
