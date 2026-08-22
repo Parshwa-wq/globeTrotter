@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Plus, Calendar, Clock, Map, MoreVertical, Loader2, X, Navigation, Trash2, Compass } from 'lucide-react';
+import { MapPin, Plus, Calendar, Map, Loader2, X, Navigation, Trash2, Compass } from 'lucide-react';
 import api from '../services/api';
 import { Skeleton } from './Skeleton';
 import StopActivities from './StopActivities';
@@ -10,7 +10,6 @@ import { useToast } from '../context/ToastContext';
 export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate, tripStatus }) {
   const [stops, setStops] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [isAddingStop, setIsAddingStop] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [expandedStops, setExpandedStops] = useState([]);
@@ -47,21 +46,20 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate,
     departure_date: maxDate
   });
 
-  const fetchStops = async () => {
+  const fetchStops = useCallback(async () => {
     try {
       const response = await api.get(`/trips/${tripId}/stops`);
       setStops(response.data.data || []);
     } catch (err) {
       console.error('Failed to fetch stops:', err);
-      setError('Could not load itinerary stops.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [tripId]);
 
   useEffect(() => {
     fetchStops();
-  }, [tripId]);
+  }, [fetchStops]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

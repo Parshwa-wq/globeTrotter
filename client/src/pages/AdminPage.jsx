@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Users, LayoutDashboard, MapPin, Activity, Trash2, ArrowLeft, Loader2, ShieldAlert, Shield, ShieldMinus, Terminal } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
@@ -40,7 +40,7 @@ export default function AdminPage() {
     if (user?.role === 'admin') {
       fetchAdminData();
     }
-  }, [user]);
+  }, [user, addToast]);
 
   if (!user || user.role !== 'admin') {
     return <Navigate to="/dashboard" replace />;

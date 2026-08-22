@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Wallet, TrendingUp, AlertCircle, MapPin, Receipt, Plane, Plus, Trash2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Wallet, TrendingUp, AlertCircle, MapPin, Receipt, Plus, Trash2 } from 'lucide-react';
 import api from '../services/api';
 import { Skeleton } from '../components/Skeleton';
 import { getPreferredCurrency, formatCurrency, convertCurrency } from '../utils/currency';
 import { useToast } from '../context/ToastContext';
 import ConfirmModal from '../components/ConfirmModal';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function TripBudgetPage() {
   const { id } = useParams();
@@ -16,17 +15,7 @@ export default function TripBudgetPage() {
   const [error, setError] = useState('');
 
   // Form states
-  const [isAddingExpense, setIsAddingExpense] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [selectedActivityId, setSelectedActivityId] = useState('');
-  
-  const [formData, setFormData] = useState({
-    description: '',
-    amount: '',
-    currency: 'USD'
-  });
-
-  const fetchBudget = async () => {
+  const fetchBudget = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get(`/trips/${id}/budget`);
@@ -37,44 +26,15 @@ export default function TripBudgetPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchBudget();
-  }, [id]);
-
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  }, [fetchBudget]);
 
   const { addToast } = useToast();
   const [expenseToDelete, setExpenseToDelete] = useState(null); // { activityId, expenseId }
   const [deleting, setDeleting] = useState(false);
-
-  const handleAddExpense = async (e) => {
-    e.preventDefault();
-    if (!selectedActivityId) {
-      addToast("Please select an activity to attach this expense to.", "info");
-      return;
-    }
-    
-    setSubmitting(true);
-    try {
-      await api.post(`/activities/${selectedActivityId}/expenses`, {
-        ...formData,
-        amount: parseFloat(formData.amount)
-      });
-      await fetchBudget();
-      setIsAddingExpense(false);
-      setFormData({ description: '', amount: '', currency: 'USD' });
-      addToast('Expense logged successfully.', 'success');
-    } catch (err) {
-      console.error('Error adding expense:', err);
-      addToast('Failed to log expense. Verify inputs and try again.', 'error');
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const executeDeleteExpense = async () => {
     if (!expenseToDelete) return;

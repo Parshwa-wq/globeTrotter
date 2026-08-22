@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Clock, Tag, X, Loader2, Trash2 } from 'lucide-react';
+import { Plus, Clock, X, Loader2, Trash2 } from 'lucide-react';
 import api from '../services/api';
 import ConfirmModal from './ConfirmModal';
 import { useToast } from '../context/ToastContext';
@@ -22,10 +22,9 @@ const CATEGORY_COLORS = {
   other: 'text-white/70 border-white/30 bg-white/10',
 };
 
-const StopActivities = ({ stopId, onClose, isReadOnly }) => {
+const StopActivities = ({ stopId, isReadOnly }) => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   
   const [isAdding, setIsAdding] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -46,22 +45,21 @@ const StopActivities = ({ stopId, onClose, isReadOnly }) => {
     currency: 'USD'
   });
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.get(`/stops/${stopId}/activities`);
       setActivities(res.data.data || []);
     } catch (err) {
       console.error('Failed to fetch activities:', err);
-      setError('Failed to load activities.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [stopId]);
 
   useEffect(() => {
     if (stopId) fetchActivities();
-  }, [stopId]);
+  }, [stopId, fetchActivities]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

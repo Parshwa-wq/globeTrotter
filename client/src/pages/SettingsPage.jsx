@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Mail, LogOut, Shield, Bell, Moon, CreditCard, ChevronRight, Trash2, AlertTriangle, Loader2 } from 'lucide-react';
+import { Mail, Shield, Bell, Moon, CreditCard, Trash2, AlertTriangle, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { getPreferredCurrency, setPreferredCurrency } from '../utils/currency';
