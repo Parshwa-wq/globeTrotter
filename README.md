@@ -15,10 +15,13 @@ A modern, full-stack travel planning application.
    - Built the beautiful, animated `AuthForm.jsx` (terminal aesthetic).
    - Removed OAuth dependencies as requested (pure email/password).
    - Wired the form directly into our `AuthContext`.
-   - Placed the form into `LoginPage.jsx` and `SignupPage.jsx`.
+5. **Dashboard & Main Layout (Phase 5):**
+   - Extracted UI components: `PillNavbar`, `Skeleton`, and `TopographicBackground`.
+   - Built the protected `MainLayout` with ambient glow and topographic effects.
+   - Created a comprehensive `DashboardPage` featuring top-level metrics, upcoming trip widgets, and dynamic API data fetching (hitting `/api/trips`).
 
 ## 🤝 Next Steps / Handoff
 - **Backend Dev:** You have full ownership of `server/`. Continue building the trip, stop, and activity controllers.
-- **Frontend Dev (Me):** I will begin building out the core application pages inside `MainLayout.jsx`, including the Dashboard, Trip Cards, and the Trip Builder interface.
+- **Frontend Dev (Me):** I will begin building out the core application pages inside `MainLayout.jsx`, specifically the Trip Details page and the New Trip creation flow.
 
 *Please pull the latest changes before you start coding to avoid merge conflicts!*
