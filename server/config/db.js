@@ -1,26 +1,23 @@
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'globetrotter_db',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
 });
 
-// Test connection on startup
-(async () => {
-    try {
-        const connection = await pool.getConnection();
-        console.log('✅ MySQL connected to globetrotter_db');
-        connection.release();
-    } catch (err) {
-        console.error('❌ MySQL connection failed:', err.message);
-    }
-})();
+pool.on('connect', () => {
+  console.log('✅ Connected to PostgreSQL Database');
+});
 
-module.exports = pool;
+pool.on('error', (err) => {
+  console.error('❌ Unexpected error on idle client', err);
+  process.exit(-1);
+});
+
+module.exports = {
+  query: (text, params) => pool.query(text, params),
+};
