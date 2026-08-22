@@ -1,22 +1,16 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useContext } from 'react';
 import api from '../services/api';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Check if user is already logged in on initial load
-  useEffect(() => {
-    const token = localStorage.getItem('globetrotter_token');
+  const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem('globetrotter_user');
-    
-    if (token && storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, []);
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  const loading = false; // Hardcode to false since we initialize eagerly now
+
+  // Eager initialization handles this now
 
   const login = async (email, password) => {
     try {
