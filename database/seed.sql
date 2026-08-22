@@ -9,7 +9,7 @@
 --   mysql -u root globetrotter_db < database/seed.sql
 -- ============================================
 
-
+USE globetrotter_db;
 
 -- ============================================
 -- USERS (3 users)
@@ -42,7 +42,7 @@ INSERT INTO activities (stop_id, title, description, category, start_time, end_t
 
 -- Activities for Jodhpur (stop_id = 2)
 INSERT INTO activities (stop_id, title, description, category, start_time, end_time, sort_order) VALUES
-(2, 'Mehrangarh Fort Tour', 'Guided tour of one of India''s largest and most well-preserved forts', 'sightseeing', '08:00:00', '11:00:00', 1),
+(2, 'Mehrangarh Fort Tour', 'Guided tour of one of India\'s largest and most well-preserved forts', 'sightseeing', '08:00:00', '11:00:00', 1),
 (2, 'Jodhpur Blue City Walk', 'Walk through the famous blue-painted houses of the old city', 'adventure', '15:00:00', '17:00:00', 2),
 (2, 'Rajasthani Thali Dinner', 'Enjoy a traditional Rajasthani thali at a local restaurant', 'food', '19:00:00', '20:30:00', 3);
 
@@ -92,20 +92,20 @@ INSERT INTO stops (trip_id, city_name, country, day_number, sort_order, arrival_
 -- Activities for Paris (stop_id = 4)
 INSERT INTO activities (stop_id, title, description, category, start_time, end_time, sort_order) VALUES
 (4, 'Eiffel Tower Summit Visit', 'Visit the iconic iron tower with summit access for panoramic views', 'sightseeing', '10:00:00', '13:00:00', 1),
-(4, 'Louvre Museum Half-Day', 'Explore the world''s largest art museum — see the Mona Lisa and Venus de Milo', 'culture', '14:00:00', '18:00:00', 2),
+(4, 'Louvre Museum Half-Day', 'Explore the world\'s largest art museum — see the Mona Lisa and Venus de Milo', 'culture', '14:00:00', '18:00:00', 2),
 (4, 'Seine River Evening Cruise', 'Romantic evening cruise along the Seine with city lights', 'adventure', '19:00:00', '21:00:00', 3);
 
 -- Activities for Amsterdam (stop_id = 5)
 INSERT INTO activities (stop_id, title, description, category, start_time, end_time, sort_order) VALUES
 (5, 'Anne Frank House', 'Visit the historic house where Anne Frank wrote her famous diary', 'culture', '09:00:00', '11:00:00', 1),
-(5, 'Canal Boat Tour', 'Guided boat tour through Amsterdam''s UNESCO World Heritage canals', 'adventure', '14:00:00', '15:30:00', 2),
-(5, 'Vondelpark Cycling', 'Rent a bike and cycle through Amsterdam''s largest city park', 'adventure', '16:00:00', '18:00:00', 3);
+(5, 'Canal Boat Tour', 'Guided boat tour through Amsterdam\'s UNESCO World Heritage canals', 'adventure', '14:00:00', '15:30:00', 2),
+(5, 'Vondelpark Cycling', 'Rent a bike and cycle through Amsterdam\'s largest city park', 'adventure', '16:00:00', '18:00:00', 3);
 
 -- Activities for Berlin (stop_id = 6)
 INSERT INTO activities (stop_id, title, description, category, start_time, end_time, sort_order) VALUES
 (6, 'Brandenburg Gate & Reichstag', 'Visit the iconic gate and tour the glass dome of the Reichstag', 'sightseeing', '09:00:00', '12:00:00', 1),
 (6, 'Berlin Wall Memorial', 'Walk along the preserved sections of the Berlin Wall and visit the memorial', 'culture', '14:00:00', '16:00:00', 2),
-(6, 'Street Food at Markthalle Neun', 'Taste diverse street food at Berlin''s famous market hall', 'food', '18:00:00', '20:00:00', 3);
+(6, 'Street Food at Markthalle Neun', 'Taste diverse street food at Berlin\'s famous market hall', 'food', '18:00:00', '20:00:00', 3);
 
 -- Activities for Prague (stop_id = 7)
 INSERT INTO activities (stop_id, title, description, category, start_time, end_time, sort_order) VALUES
@@ -186,10 +186,10 @@ INSERT INTO expenses (activity_id, description, amount, currency) VALUES
 (29, 'Beach parking & snacks', 200.00, 'INR');
 
 -- ============================================
--- SHARED LINKS (using gen_random_uuid() function)
+-- SHARED LINKS (using UUID() function)
 -- ============================================
-INSERT INTO shared_links (trip_id, share_id) VALUES (1, gen_random_uuid());
-INSERT INTO shared_links (trip_id, share_id) VALUES (3, gen_random_uuid());
+INSERT INTO shared_links (trip_id, share_id) VALUES (1, UUID());
+INSERT INTO shared_links (trip_id, share_id) VALUES (3, UUID());
 
 -- ============================================
 -- VERIFICATION QUERIES (run these to confirm data)
