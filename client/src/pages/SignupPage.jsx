@@ -1,10 +1,10 @@
 import React from 'react';
+import AuthForm from '../components/AuthForm';
 
 export default function SignupPage() {
   return (
-    <div style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-      <h2 style={{ color: 'var(--color-text-primary)' }}>Sign Up Page</h2>
-      <p>AuthForm component (register mode) will go here.</p>
+    <div className="w-full">
+      <AuthForm initialMode="register" />
     </div>
   );
 }
