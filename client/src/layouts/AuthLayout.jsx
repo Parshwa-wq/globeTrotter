@@ -8,7 +8,7 @@ export default function AuthLayout() {
       {/* Interactive Topographic Canvas Background */}
       <TopographicBackground />
       
-      {/* Top Left Logo (FinVest style) */}
+      {/* Top Left Logo (Hacker style) */}
       <div className="absolute top-6 left-8 z-20 font-grotesk font-bold text-xl tracking-widest flex items-center gap-1">
         GLOBE<span className="text-neon-green">TROTTER</span>
       </div>
