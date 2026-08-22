@@ -8,8 +8,7 @@ export function PillNavbar() {
   
   const navItems = [
     { id: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: '/trips', label: 'Trips', icon: Map },
-    { id: '/budget', label: 'Budget', icon: Activity },
+    { id: '/trips', label: 'Trips', icon: Map }
   ];
 
   return (
@@ -48,12 +47,12 @@ export function PillNavbar() {
 
       {/* Floating Settings Button in Top Right */}
       <div className="fixed top-6 right-6 z-50">
-        <Link
-          to="/settings"
+        <button
+          onClick={() => alert('Settings dashboard coming soon in Phase 8!')}
           className="flex items-center justify-center w-12 h-12 bg-[#0a0a0a]/80 backdrop-blur-xl border border-[#1a1a1a] hover:border-white/20 hover:text-white rounded-full shadow-2xl transition-all duration-300 text-gray-400 hover:rotate-90 group"
         >
           <Settings className="w-5 h-5 group-hover:text-neon-green transition-colors" />
-        </Link>
+        </button>
       </div>
     </>
   );

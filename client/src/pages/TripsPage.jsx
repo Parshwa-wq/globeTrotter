@@ -124,22 +124,24 @@ export default function TripsPage() {
               >
                 {/* Dark overlay to ensure text readability */}
                 <div className="absolute inset-0 bg-black/40 pointer-events-none" />
-                
-                {/* Status Pill */}
-                <div className="absolute top-4 right-4 z-10 flex items-center gap-2 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-sm">
-                  <div className={`w-1.5 h-1.5 rounded-full ${statusInfo.dot}`} />
-                  <span className={`text-[10px] font-mono font-bold uppercase tracking-widest ${statusInfo.color}`}>
-                    {statusInfo.text}
-                  </span>
-                </div>
 
                 {/* Plane Watermark */}
                 <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                   <Plane className="w-48 h-48 -rotate-12 translate-x-12 -translate-y-12 text-white" />
                 </div>
                 
-                <div className="flex-1 relative z-10 pr-12">
-                  <h3 className="font-grotesk text-2xl font-bold text-white mb-2 shadow-sm line-clamp-2">{trip.title}</h3>
+                <div className="flex-1 relative z-10 flex flex-col">
+                  <div className="flex justify-between items-start gap-4 mb-4">
+                    <h3 className="font-grotesk text-2xl font-bold text-white shadow-sm line-clamp-2 flex-1">{trip.title}</h3>
+                    
+                    {/* Status Pill */}
+                    <div className="shrink-0 flex items-center gap-2 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-sm">
+                      <div className={`w-1.5 h-1.5 rounded-full ${statusInfo.dot}`} />
+                      <span className={`text-[10px] font-mono font-bold uppercase tracking-widest ${statusInfo.color}`}>
+                        {statusInfo.text}
+                      </span>
+                    </div>
+                  </div>
                   
                   {(trip.start_date || trip.end_date) && (
                     <p className="font-mono text-[10px] text-white/50 uppercase tracking-widest flex items-center gap-2 mb-4">
