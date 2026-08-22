@@ -64,8 +64,9 @@
   
   /* Hackathon Fast Light Mode using CSS Filter Inversion */
   body.light-mode {
-    filter: invert(1) hue-rotate(180deg);
-    background-color: #ffffff;
+    /* Soften the stark contrast: 0.93 inversion for off-white background, slight sepia for warmth */
+    filter: invert(0.93) hue-rotate(180deg) sepia(0.05) saturate(1.1);
+    background-color: #000000; 
   }
   
   /* Fix for CSS filter breaking 'fixed' positioning: move scrolling to #root */
