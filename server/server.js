@@ -16,6 +16,7 @@ const stopRoutes = require('./routes/stopRoutes');
 const activityRoutes = require('./routes/activityRoutes');
 const shareRoutes = require('./routes/shareRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
+const scrapeRoutes = require('./routes/scrapeRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 // Mount Routes
@@ -25,6 +26,7 @@ app.use('/api/trips/:tripId/stops', stopRoutes);
 app.use('/api/stops/:stopId/activities', activityRoutes);
 app.use('/api/share', shareRoutes);
 app.use('/api/activities/:activityId/expenses', expenseRoutes);
+app.use('/api/scrape', scrapeRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Test Database Connection Route

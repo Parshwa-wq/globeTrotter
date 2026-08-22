@@ -1,69 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, MapPin, Loader2, Share2, Trash2, AlertTriangle, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useParams, Link } from 'react-router-dom';
+import { ArrowLeft, Calendar, MapPin, Loader2, Plane, Train, Car } from 'lucide-react';
+import { motion } from 'framer-motion';
 import api from '../services/api';
 import { Skeleton } from '../components/Skeleton';
 import ItineraryWorkspace from '../components/ItineraryWorkspace';
-import { useToast } from '../context/ToastContext';
+import RouteMap from '../components/RouteMap';
 
 export default function TripDetailsPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [trip, setTrip] = useState(null);
+  const [savedRoute, setSavedRoute] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [sharing, setSharing] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const { addToast } = useToast();
-
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  const executeDelete = async () => {
-    try {
-      setDeleting(true);
-      const response = await api.delete(`/trips/${id}`);
-      if (response.data.success) {
-        addToast('Trip permanently deleted.', 'success');
-        navigate('/dashboard');
-      } else {
-        addToast(response.data.message || 'Failed to delete trip.', 'error');
-        setShowDeleteConfirm(false);
-      }
-    } catch (err) {
-      console.error('Error deleting trip:', err);
-      addToast('An error occurred while deleting the trip.', 'error');
-      setShowDeleteConfirm(false);
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  const handleShare = async () => {
-    try {
-      setSharing(true);
-      const response = await api.post(`/share/${trip.id}`);
-      if (response.data.success) {
-        // Construct the frontend public URL
-        const frontendLink = `${window.location.origin}/share/${response.data.data.shareId}`;
-        await navigator.clipboard.writeText(frontendLink);
-        addToast('Public share link copied to clipboard!', 'success');
-      } else {
-        addToast(response.data.message || 'Failed to generate link', 'error');
-      }
-    } catch (error) {
-      console.error('Error sharing trip:', error);
-      addToast('An error occurred while generating share link', 'error');
-    } finally {
-      setSharing(false);
-    }
-  };
 
   useEffect(() => {
     const fetchTripDetails = async () => {
       try {
-        const response = await api.get(`/trips/${id}`);
-        setTrip(response.data.data);
+        const [tripRes, routeRes] = await Promise.all([
+          api.get(`/trips/${id}`),
+          api.get(`/scrape/saved/${id}`)
+        ]);
+        setTrip(tripRes.data.data);
+        if (routeRes.data.data) {
+          setSavedRoute(routeRes.data.data);
+        }
       } catch (err) {
         console.error('Error fetching trip details:', err);
         setError('Failed to retrieve trip protocol. Re-establishing link...');
@@ -108,7 +69,7 @@ export default function TripDetailsPage() {
 
       <header className="mb-12 border-l-2 border-neon-green pl-6">
         <h1 className="font-grotesk text-4xl md:text-5xl font-bold tracking-tight mb-4">
-          {trip.title}
+          {savedRoute ? `${savedRoute.origin} → ${trip.title}` : trip.title}
         </h1>
         
         <div className="flex flex-wrap items-center gap-4">
@@ -127,28 +88,9 @@ export default function TripDetailsPage() {
             </div>
           )}
 
-          <div className="ml-auto flex items-center gap-3">
-            <button 
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={deleting}
-              className="font-mono text-xs uppercase tracking-widest text-red-500 border border-red-500/20 hover:bg-red-500/10 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
-              title="Delete Trip"
-            >
-              {deleting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
-              <span className="hidden sm:inline">Delete</span>
-            </button>
-            <button 
-              onClick={handleShare}
-              disabled={sharing}
-              className="font-mono text-xs uppercase tracking-widest text-neon-cyan border border-neon-cyan/50 hover:bg-neon-cyan/10 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
-            >
-              {sharing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Share2 className="w-3 h-3" />}
-              <span className="hidden sm:inline">Share</span>
-            </button>
-            <Link to={`/trips/${trip.id}/budget`} className="font-mono text-xs uppercase tracking-widest text-black bg-neon-green hover:bg-neon-green/90 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(57,255,20,0.2)]">
-              Open Budget <ArrowLeft className="w-3 h-3 rotate-180" />
-            </Link>
-          </div>
+          <Link to={`/trips/${trip.id}/budget`} className="ml-auto font-mono text-xs uppercase tracking-widest text-black bg-neon-green hover:bg-neon-green/90 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(57,255,20,0.2)]">
+            Open Budget <ArrowLeft className="w-3 h-3 rotate-180" />
+          </Link>
         </div>
         
         {trip.description && (
@@ -158,57 +100,48 @@ export default function TripDetailsPage() {
         )}
       </header>
 
-      {/* Custom Delete Confirmation Modal */}
-      <AnimatePresence>
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-              onClick={() => !deleting && setShowDeleteConfirm(false)}
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-[#0a0a0a] border border-[#222] rounded-2xl shadow-2xl overflow-hidden"
-            >
-              <div className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center shrink-0 border border-red-500/20">
-                    <AlertTriangle className="w-6 h-6 text-red-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-grotesk text-xl font-bold text-white mb-2">Delete Itinerary?</h3>
-                    <p className="text-sm text-white/50 font-inter mb-4">
-                      This action cannot be undone. This will permanently delete the <strong className="text-white">{trip.title}</strong> trip, including all stops, activities, and budget expenses.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 mt-6">
-                  <button 
-                    onClick={() => setShowDeleteConfirm(false)}
-                    disabled={deleting}
-                    className="flex-1 py-3 px-4 rounded-xl border border-[#333] hover:bg-[#111] text-white font-mono text-sm uppercase tracking-widest transition-colors disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={executeDelete}
-                    disabled={deleting}
-                    className="flex-1 py-3 px-4 rounded-xl bg-red-500 hover:bg-red-600 text-white font-mono text-sm uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(239,68,68,0.3)] disabled:opacity-50"
-                  >
-                    {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                    Confirm Delete
-                  </button>
-                </div>
-              </div>
-            </motion.div>
+      {/* Seamless Integrated Route Display */}
+      {savedRoute && (
+        <div className="mb-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 h-[400px] rounded-2xl overflow-hidden border border-[#333] shadow-[0_0_30px_rgba(127,255,0,0.1)]">
+             <RouteMap mode={savedRoute.mode} stations={savedRoute.stations_json} />
           </div>
-        )}
-      </AnimatePresence>
+          <div className="bento-card border border-[#222] bg-[#0a0a0a] flex flex-col">
+             <h3 className="font-mono text-xs text-[#666] uppercase tracking-widest mb-6 border-b border-[#222] pb-4">Route Intelligence</h3>
+             
+             <div className="mb-8">
+               <div>
+                 <p className="text-[#666] font-mono text-[10px] uppercase mb-1">Mode</p>
+                 <div className="flex items-center gap-2 text-neon-green font-mono font-bold uppercase">
+                   {savedRoute.mode === 'flight' && <Plane className="w-4 h-4" />}
+                   {savedRoute.mode === 'train' && <Train className="w-4 h-4" />}
+                   {savedRoute.mode === 'car' && <Car className="w-4 h-4" />}
+                   {savedRoute.mode}
+                 </div>
+               </div>
+             </div>
+
+             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                <p className="text-[#666] font-mono text-[10px] uppercase mb-4">Transit Manifest</p>
+                <div className="space-y-4">
+                  {savedRoute.stations_json.map((station, i) => (
+                    <div key={i} className="flex items-start gap-4">
+                      <div className="flex flex-col items-center mt-1">
+                        <div className={`w-2 h-2 rounded-full ${i===0 || i===savedRoute.stations_json.length-1 ? 'bg-neon-green shadow-[0_0_8px_rgba(127,255,0,0.8)]' : 'bg-[#444]'}`}></div>
+                        {i !== savedRoute.stations_json.length - 1 && <div className="w-px h-8 bg-[#333] my-1"></div>}
+                      </div>
+                      <div>
+                        <p className="text-white font-mono text-xs">{station.name}</p>
+                        <p className="text-[#555] font-mono text-[9px] uppercase tracking-widest">{station.type}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+             </div>
+
+                       </div>
+        </div>
+      )}
 
       {/* Workspace Area for Stops & Activities */}
       <ItineraryWorkspace tripId={trip.id} tripStartDate={trip.start_date} tripEndDate={trip.end_date} tripStatus={trip.status} />
