@@ -192,6 +192,14 @@ INSERT INTO shared_links (trip_id, share_id) VALUES (1, UUID());
 INSERT INTO shared_links (trip_id, share_id) VALUES (3, UUID());
 
 -- ============================================
+-- AI ROUTES (For visual Map/intelligence display)
+-- ============================================
+INSERT INTO trip_routes (trip_id, origin, destination, mode, stations_json) VALUES
+(1, 'Mumbai', 'Jaipur', 'flight', '[{"name": "Mumbai (DEP)", "type": "departure", "lat": 19.07611, "lng": 72.8775}, {"name": "Jaipur (ARR)", "type": "arrival", "lat": 26.915, "lng": 75.82}]'),
+(2, 'New York', 'Paris', 'flight', '[{"name": "New York (DEP)", "type": "departure", "lat": 20.5992, "lng": 72.9342}, {"name": "Paris (ARR)", "type": "arrival", "lat": 48.8567, "lng": 2.3522}]'),
+(3, 'San Francisco', 'Tokyo', 'flight', '[{"name": "San Francisco (DEP)", "type": "departure", "lat": 37.7775, "lng": -122.41639}, {"name": "Tokyo (ARR)", "type": "arrival", "lat": 35.68972, "lng": 139.69222}]');
+
+-- ============================================
 -- VERIFICATION QUERIES (run these to confirm data)
 -- ============================================
 -- SELECT COUNT(*) AS user_count FROM users;           -- Expected: 3
