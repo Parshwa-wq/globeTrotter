@@ -17,9 +17,9 @@ USE globetrotter_db;
 -- Generated with: bcryptjs.hashSync("Password@123", 10)
 -- ============================================
 INSERT INTO users (name, email, password_hash, role) VALUES
-('Dhairya Patel', 'dhairya@globetrotter.dev', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'user'),
-('Parshwa Shah', 'parshwa@globetrotter.dev', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'user'),
-('Admin User', 'admin@globetrotter.dev', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin');
+('Dhairya Patel', 'dhairya@globetrotter.dev', '$2b$10$RNinYK7O9szKHFQtu2zID.ShpPOFrYDQoFjhbGx5XVo3BElLrN6Pq', 'user'),
+('Parshwa Shah', 'parshwa@globetrotter.dev', '$2b$10$RNinYK7O9szKHFQtu2zID.ShpPOFrYDQoFjhbGx5XVo3BElLrN6Pq', 'user'),
+('Admin User', 'admin@globetrotter.dev', '$2b$10$RNinYK7O9szKHFQtu2zID.ShpPOFrYDQoFjhbGx5XVo3BElLrN6Pq', 'admin');
 
 -- ============================================
 -- TRIP 1: Rajasthan Heritage Tour (user: Dhairya)

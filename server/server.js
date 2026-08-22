@@ -15,6 +15,7 @@ const tripRoutes = require('./routes/tripRoutes');
 const stopRoutes = require('./routes/stopRoutes');
 const activityRoutes = require('./routes/activityRoutes');
 const shareRoutes = require('./routes/shareRoutes');
+const expenseRoutes = require('./routes/expenseRoutes');
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
@@ -22,6 +23,7 @@ app.use('/api/trips', tripRoutes);
 app.use('/api/trips/:tripId/stops', stopRoutes);
 app.use('/api/stops/:stopId/activities', activityRoutes);
 app.use('/api/share', shareRoutes);
+app.use('/api/activities/:activityId/expenses', expenseRoutes);
 
 // Test Database Connection Route
 app.get('/api/test-db', async (req, res) => {
