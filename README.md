@@ -6,17 +6,18 @@ A modern, full-stack travel planning application.
 
 ## 🛠️ Current Project Status (Hackathon Progress)
 
-**What I just did (Update for the team):**
-1. **Database Pivot:** We moved from PostgreSQL to **MySQL (XAMPP)**. The `database/schema.sql` and `database/seed.sql` files have been completely rewritten for MySQL. **I have already run them in my local XAMPP and verified the data.**
-2. **Backend Config:** Updated `server/config/db.js` to use `mysql2` instead of `pg`. The backend successfully connects to the local MySQL db.
-3. **Frontend Initialized (Phase 1):** I initialized the React app using Vite inside the `client/` folder. I also:
-   - Installed our core UI dependencies: `react-router-dom`, `axios`, `framer-motion`, and `lucide-react`.
-   - Setup our global CSS variables in `client/src/index.css` for the dark/neon hacker aesthetic we discussed.
-   - Cleaned up the default Vite boilerplate in `App.jsx`.
-4. **Architecture Docs:** I updated `ARCHITECTURE.md` to reflect the MySQL change and our new frontend tech stack so it remains our source of truth.
+**What was just done:**
+1. **Database & Backend Base (Phase 1):** Switched to **MySQL (XAMPP)**, tested local DB connections, and backend is setup with `mysql2` and `server.js` (pulled cleanly, no conflicts).
+2. **Frontend Routing Skeleton (Phase 2):** 
+   - Wrapped the app in `react-router-dom` (`main.jsx`).
+   - Created `AuthLayout.jsx` (for login/signup) and `MainLayout.jsx` (for the dashboard).
+   - Created empty placeholder pages (`LoginPage.jsx`, `SignupPage.jsx`, `DashboardPage.jsx`, `NotFoundPage.jsx`).
+   - Mapped all these routes in `App.jsx`.
+
+*Note: The frontend code compiles perfectly with zero errors.*
 
 ## 🤝 Next Steps / Handoff
-- **Backend Dev:** You can start building the Express routes and controllers in `server/`. The `mysql2` pool is ready to go in `config/db.js`.
-- **Frontend Dev (Me):** I will start building out the routing skeleton (`react-router-dom`), the layout wrappers, and the Authentication UI (Login/Register).
+- **Backend Dev:** You have full ownership of `server/`. You can continue building the authentication and trip controllers. Our API URL structure will be `http://localhost:5000/api/...`.
+- **Frontend Dev (Me):** Next up is **Phase 3 & 4**, where I will implement the custom `AuthContext` and build out the actual animated `AuthForm.jsx` UI component for the login/signup pages.
 
 *Please pull the latest changes before you start coding to avoid merge conflicts!*

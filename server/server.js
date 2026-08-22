@@ -9,6 +9,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Import Routes
+const authRoutes = require('./routes/authRoutes');
+
+// Mount Routes
+app.use('/api/auth', authRoutes);
+
 // Test Database Connection Route
 app.get('/api/test-db', async (req, res) => {
   try {
