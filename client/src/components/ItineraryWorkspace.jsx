@@ -196,6 +196,9 @@ export default function ItineraryWorkspace({ tripId, tripStartDate, tripEndDate,
                 <MapPin className="w-5 h-5" />
               </div>
 
+              {/* Spacer for alternating layout */}
+              <div className="hidden md:block w-[calc(50%-2.5rem)]"></div>
+
               {/* Card */}
               <div 
                 className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-5 bento-card border-[#222] hover:border-white/20 transition-all duration-500 relative overflow-hidden"

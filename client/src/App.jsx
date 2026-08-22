@@ -13,6 +13,7 @@ import TripsPage from './pages/TripsPage';
 import CreateTripPage from './pages/CreateTripPage';
 import TripDetailsPage from './pages/TripDetailsPage';
 import TripBudgetPage from './pages/TripBudgetPage';
+import SettingsPage from './pages/SettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
         <Route path="/trips/new" element={<CreateTripPage />} />
         <Route path="/trips/:id" element={<TripDetailsPage />} />
         <Route path="/trips/:id/budget" element={<TripBudgetPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
       {/* 404 Route */}
