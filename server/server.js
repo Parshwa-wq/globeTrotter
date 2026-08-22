@@ -17,6 +17,7 @@ const activityRoutes = require('./routes/activityRoutes');
 const shareRoutes = require('./routes/shareRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const scrapeRoutes = require('./routes/scrapeRoutes');
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
@@ -26,6 +27,7 @@ app.use('/api/stops/:stopId/activities', activityRoutes);
 app.use('/api/share', shareRoutes);
 app.use('/api/activities/:activityId/expenses', expenseRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/scrape', scrapeRoutes);
 
 // Test Database Connection Route
 app.get('/api/test-db', async (req, res) => {

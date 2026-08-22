@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Loader2, Share2, Trash2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Calendar, Loader2, Share2, Trash2, AlertTriangle, Plane, Train, Car } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../services/api';
 import { Skeleton } from '../components/Skeleton';
 import ItineraryWorkspace from '../components/ItineraryWorkspace';
 import { useToast } from '../context/ToastContext';
+import RouteMap from '../components/RouteMap';
 
 export default function TripDetailsPage() {
   const { id } = useParams();
@@ -15,6 +16,7 @@ export default function TripDetailsPage() {
   const [error, setError] = useState('');
   const [sharing, setSharing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [savedRoute, setSavedRoute] = useState(null);
   const { addToast } = useToast();
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -64,6 +66,15 @@ export default function TripDetailsPage() {
       try {
         const response = await api.get(`/trips/${id}`);
         setTrip(response.data.data);
+        
+        try {
+          const routeRes = await api.get(`/scrape/saved/${id}`);
+          if (routeRes.data.success && routeRes.data.data) {
+            setSavedRoute(routeRes.data.data);
+          }
+        } catch (routeErr) {
+          console.error('Error fetching scraped route intelligence:', routeErr);
+        }
       } catch (err) {
         console.error('Error fetching trip details:', err);
         setError('Failed to retrieve trip protocol. Re-establishing link...');
@@ -108,7 +119,7 @@ export default function TripDetailsPage() {
 
       <header className="mb-12 border-l-2 border-neon-green pl-6">
         <h1 className="font-grotesk text-4xl md:text-5xl font-bold tracking-tight mb-4">
-          {trip.title}
+          {savedRoute ? `${savedRoute.origin} → ${trip.title}` : trip.title}
         </h1>
         
         <div className="flex flex-wrap items-center gap-4">
@@ -209,6 +220,36 @@ export default function TripDetailsPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Seamless Integrated Route Display */}
+      {savedRoute && (
+        <div className="mb-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 h-[400px] rounded-2xl overflow-hidden border border-[#333] shadow-[0_0_30px_rgba(127,255,0,0.1)]">
+             <RouteMap mode={savedRoute.mode} stations={savedRoute.stations_json} />
+          </div>
+          <div className="bento-card border border-[#222] bg-[#0a0a0a] flex flex-col">
+             <h3 className="font-mono text-xs text-[#666] uppercase tracking-widest mb-6 border-b border-[#222] pb-4">Route Intelligence</h3>
+
+             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                <p className="text-[#666] font-mono text-[10px] uppercase mb-4">Transit Manifest</p>
+                <div className="space-y-4">
+                  {savedRoute.stations_json.map((station, i) => (
+                    <div key={i} className="flex items-start gap-4">
+                      <div className="flex flex-col items-center mt-1">
+                        <div className={`w-2 h-2 rounded-full ${i===0 || i===savedRoute.stations_json.length-1 ? 'bg-neon-green shadow-[0_0_8px_rgba(127,255,0,0.8)]' : 'bg-[#444]'}`}></div>
+                        {i !== savedRoute.stations_json.length - 1 && <div className="w-px h-8 bg-[#333] my-1"></div>}
+                      </div>
+                      <div>
+                        <p className="text-white font-mono text-xs">{station.name}</p>
+                        <p className="text-[#555] font-mono text-[9px] uppercase tracking-widest">{station.type}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+             </div>
+          </div>
+        </div>
+      )}
 
       {/* Workspace Area for Stops & Activities */}
       <ItineraryWorkspace tripId={trip.id} tripStartDate={trip.start_date} tripEndDate={trip.end_date} tripStatus={trip.status} />

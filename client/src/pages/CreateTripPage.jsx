@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, Calendar as CalendarIcon, Type, AlignLeft } from 'lucide-react';
+import { ArrowLeft, Loader2, Calendar as CalendarIcon, Type, AlignLeft, Plane, Train, Car, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../services/api';
 
@@ -10,11 +10,40 @@ export default function CreateTripPage() {
   const [error, setError] = useState('');
   
   const [formData, setFormData] = useState({
-    title: '',
+    title: '', // Acts as Destination
     description: '',
     start_date: '',
     end_date: '',
+    mode: 'flight' // Default mode
   });
+
+  const [origin, setOrigin] = useState('');
+  const [geoStatus, setGeoStatus] = useState('Checking GPS...');
+
+  // Automatically fetch origin on load
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            setGeoStatus('Resolving coordinates...');
+            const { latitude, longitude } = position.coords;
+            // Free Reverse Geocoding (No API Key Required)
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            const data = await res.json();
+            const city = data.address.city || data.address.town || data.address.village || data.address.state || 'Unknown';
+            setOrigin(city);
+            setGeoStatus(`Origin Auto-Locked: ${city}`);
+          } catch (err) {
+            setGeoStatus('Failed to resolve city. Please type it.');
+          }
+        },
+        () => setGeoStatus('GPS Denied. Please type your origin city manually.')
+      );
+    } else {
+      setGeoStatus('GPS not available. Please type your origin city manually.');
+    }
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,17 +51,42 @@ export default function CreateTripPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!origin) {
+      setError('Origin city is required to calculate routes.');
+      return;
+    }
+
     setError('');
     setLoading(true);
 
     try {
-      const response = await api.post('/trips', formData);
-      if (response.data.success) {
-        navigate(`/trips/${response.data.tripId}`);
+      // 1. Scrape the route first
+      let routeData;
+      try {
+        const scrapeRes = await api.get(`/scrape/route?from=${encodeURIComponent(origin)}&to=${encodeURIComponent(formData.title)}&mode=${formData.mode}`);
+        routeData = scrapeRes.data;
+      } catch (scrapeErr) {
+        throw new Error(scrapeErr.response?.data?.error || scrapeErr.message || 'Route calculation failed.');
       }
+
+      // 2. If scraping successful, create the trip
+      const tripRes = await api.post('/trips', formData);
+      const tripId = tripRes.data.tripId;
+
+      // 3. Save the scraped route to the database
+      await api.post(`/scrape/save/${tripId}`, {
+        origin: routeData.origin,
+        destination: routeData.destination,
+        mode: routeData.mode,
+        stations: routeData.stations
+      });
+
+      // 4. Navigate to Trip Page
+      navigate(`/trips/${tripId}`);
+
     } catch (err) {
       console.error('Failed to create trip:', err);
-      setError(err.response?.data?.message || 'Failed to deploy new trip protocol.');
+      setError(err.message || err.response?.data?.message || 'Failed to deploy new trip protocol.');
       setLoading(false);
     }
   };
@@ -56,7 +110,7 @@ export default function CreateTripPage() {
              Plan New Trip
           </h1>
           <p className="text-[#888] text-sm font-inter">
-            Enter the details for your next big adventure.
+            Enter your destination and we will automatically calculate the route.
           </p>
         </div>
 
@@ -68,9 +122,28 @@ export default function CreateTripPage() {
             </div>
           )}
 
-          <form id="trip-form" onSubmit={handleSubmit} className="space-y-4">
+          <form id="trip-form" onSubmit={handleSubmit} className="space-y-5">
+            
             <div className="space-y-1.5">
-              <label className="text-xs font-mono uppercase tracking-widest text-white/50 ml-1">Trip Title</label>
+              <label className="text-xs font-mono uppercase tracking-widest text-white/50 ml-1 flex items-center justify-between">
+                <span>Origin (From)</span>
+                <span className="text-[9px] text-neon-green">{geoStatus}</span>
+              </label>
+              <div className="relative">
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neon-green" />
+                <input
+                  type="text"
+                  required
+                  value={origin}
+                  onChange={(e) => setOrigin(e.target.value)}
+                  placeholder="e.g. New York"
+                  className="w-full bg-[#0a0a0a] border border-[#333] focus:border-neon-green rounded-xl py-2.5 pl-11 pr-4 text-neon-green font-mono placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-neon-green transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-mono uppercase tracking-widest text-white/50 ml-1">Destination (To)</label>
               <div className="relative">
                 <Type className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                 <input
@@ -79,13 +152,13 @@ export default function CreateTripPage() {
                   required
                   value={formData.title}
                   onChange={handleChange}
-                  placeholder="e.g. Euro Tour 2026"
+                  placeholder="e.g. Paris"
                   className="w-full bg-[#111] border border-[#222] focus:border-neon-green rounded-xl py-2.5 pl-11 pr-4 text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-neon-green transition-all"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 pt-2">
               <label className="text-xs font-mono uppercase tracking-widest text-white/50 ml-1">Description</label>
               <div className="relative">
                 <AlignLeft className="absolute left-4 top-3.5 w-4 h-4 text-white/20" />
@@ -147,10 +220,10 @@ export default function CreateTripPage() {
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Deploying...
+                Calculating Route & Deploying...
               </>
             ) : (
-              'Create Trip'
+              'Calculate & Create Trip'
             )}
           </button>
         </div>
